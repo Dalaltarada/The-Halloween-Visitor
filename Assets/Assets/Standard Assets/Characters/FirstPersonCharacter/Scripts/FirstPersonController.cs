@@ -19,6 +19,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [Header("UI Canvas Root")]
         [SerializeField] private GameObject uiRoot;
 
+        [Header("Zoom Settings")]
+        [SerializeField] private bool enableZoom = true;
+        [SerializeField][Range(10f, 90f)] private float zoomFOV = 35f;
+        [SerializeField] private float zoomSpeed = 10f;
+
+        private float originalFOV;
+
         [SerializeField] private bool m_IsWalking;
         [SerializeField] private float m_WalkSpeed;
         [SerializeField] private float m_RunSpeed;
@@ -54,13 +61,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         // Movement lock for Timeline
         public bool disableMovement = false;
 
-        // Check whether a float is valid
         private bool IsValidFloat(float value)
         {
             return !float.IsNaN(value) && !float.IsInfinity(value);
         }
 
-        // Check whether a Vector3 contains valid values
         private bool IsValidVector3(Vector3 value)
         {
             return IsValidFloat(value.x) &&
@@ -73,9 +78,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_CharacterController = GetComponent<CharacterController>();
             m_Camera = Camera.main;
 
+            // Save the camera's original FOV for zooming
+            originalFOV = m_Camera.fieldOfView;
+
             m_OriginalCameraPosition = m_Camera.transform.localPosition;
 
-            // Ensure the saved camera position is valid
             if (!IsValidVector3(m_OriginalCameraPosition))
             {
                 m_OriginalCameraPosition = Vector3.zero;
@@ -118,6 +125,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             if (squareUI != null)
                 squareUI.enabled = false;
+
+            // Reset zoom during Timeline
+            m_Camera.fieldOfView = originalFOV;
         }
 
         private void OnTimelineStop(PlayableDirector obj)
@@ -143,6 +153,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             RotateView();
+
+            // Handle RMB zoom
+            HandleZoom();
 
             if (!m_Jump)
             {
@@ -171,6 +184,26 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 squareUI.enabled = !squareUI.enabled;
             }
+        }
+
+        // NEW: Hold Right Mouse Button to zoom
+        private void HandleZoom()
+        {
+            if (!enableZoom || m_Camera == null)
+            {
+                return;
+            }
+
+            bool isZooming = Input.GetMouseButton(1);
+
+            float targetFOV = isZooming ? zoomFOV : originalFOV;
+
+            // Smoothly transition between normal and zoomed FOV
+            m_Camera.fieldOfView = Mathf.Lerp(
+                m_Camera.fieldOfView,
+                targetFOV,
+                Mathf.Clamp01(zoomSpeed * Time.deltaTime)
+            );
         }
 
         private void FixedUpdate()
@@ -274,7 +307,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             PlayFootStepAudio();
         }
 
-        // FIX: Safe footstep audio
+        // Safe footstep audio
         private void PlayFootStepAudio()
         {
             if (!m_CharacterController.isGrounded)
@@ -314,7 +347,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_FootstepSounds[0] = selectedClip;
         }
 
-        // FIX: Prevent invalid camera positions
+        // Prevent invalid camera positions
         private void UpdateCameraPosition(float speed)
         {
             if (!m_UseHeadBob)
@@ -331,25 +364,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     m_CharacterController.velocity.magnitude +
                     (speed * (m_IsWalking ? 1f : m_RunstepLenghten));
 
-                // Only calculate head bob with a valid speed
                 if (IsValidFloat(bobSpeed) && bobSpeed > 0f)
                 {
                     Vector3 bobPosition = m_HeadBob.DoHeadBob(bobSpeed);
 
-                    // Validate BEFORE assigning to the camera
                     if (IsValidVector3(bobPosition))
                     {
                         newCameraPosition = bobPosition;
                     }
                     else
                     {
-                        // Invalid head bob result: use safe position
                         newCameraPosition = m_OriginalCameraPosition;
                     }
                 }
             }
 
-            // Apply jump bob offset only if valid
             float jumpOffset = m_JumpBob.Offset();
 
             if (IsValidFloat(jumpOffset))
@@ -357,23 +386,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 newCameraPosition.y -= jumpOffset;
             }
 
-            // Final safety check
             if (!IsValidVector3(newCameraPosition))
             {
                 newCameraPosition = m_OriginalCameraPosition;
             }
 
-            // Assign only a valid position
             m_Camera.transform.localPosition = newCameraPosition;
         }
 
+        // Instant WASD movement without input smoothing
         private void GetInput(out float speed)
         {
-            float horizontal =
-                CrossPlatformInputManager.GetAxis("Horizontal");
-
-            float vertical =
-                CrossPlatformInputManager.GetAxis("Vertical");
+            float horizontal = Input.GetAxisRaw("Horizontal");
+            float vertical = Input.GetAxisRaw("Vertical");
 
             bool waswalking = m_IsWalking;
 
