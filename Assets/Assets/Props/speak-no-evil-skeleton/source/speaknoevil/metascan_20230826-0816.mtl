@@ -1,0 +1,12 @@
+# Source: Metascan 2.9.3
+# Device: iPhone 13 Pro
+#
+# Exported: 2023-08-26T12:40:34.949849Z
+#
+
+newmtl material_0
+illum 1
+map_Kd metascan_20230826-0816_tex0.jpeg
+norm metascan_20230826-0816_norm0.jpeg
+map_ao metascan_20230826-0816_ao0.jpeg
+map_Pr metascan_20230826-0816_roughness0.jpeg
