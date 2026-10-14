@@ -13,15 +13,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
     [RequireComponent(typeof(AudioSource))]
     public class FirstPersonController : MonoBehaviour
     {
-        [Header("UI")]
+        [Header("Interaction UI")]
         [SerializeField] private Image squareUI;
 
         [Header("UI Canvas Root")]
         [SerializeField] private GameObject uiRoot;
 
+        [Header("Interaction Settings")]
+        [SerializeField] private float interactionDistance = 3f;
+        [SerializeField] private LayerMask interactionLayers = ~0;
+
         [Header("Zoom Settings")]
         [SerializeField] private bool enableZoom = true;
-        [SerializeField][Range(10f, 90f)] private float zoomFOV = 35f;
+        [SerializeField, Range(10f, 90f)] private float zoomFOV = 35f;
         [SerializeField] private float zoomSpeed = 10f;
 
         private float originalFOV;
@@ -29,7 +33,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private bool m_IsWalking;
         [SerializeField] private float m_WalkSpeed;
         [SerializeField] private float m_RunSpeed;
-        [SerializeField][Range(0f, 1f)] private float m_RunstepLenghten;
+        [SerializeField, Range(0f, 1f)] private float m_RunstepLenghten;
         [SerializeField] private float m_JumpSpeed;
         [SerializeField] private float m_StickToGroundForce;
         [SerializeField] private float m_GravityMultiplier;
@@ -46,7 +50,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private Camera m_Camera;
         private bool m_Jump;
-        private float m_YRotation;
         private Vector2 m_Input;
         private Vector3 m_MoveDir = Vector3.zero;
         private CharacterController m_CharacterController;
@@ -58,12 +61,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
+        private IInteractable currentInteractable;
+        private PlayableDirector timelineDirector;
+
         // Movement lock for Timeline
         public bool disableMovement = false;
 
         private bool IsValidFloat(float value)
         {
-            return !float.IsNaN(value) && !float.IsInfinity(value);
+            return !float.IsNaN(value) &&
+                   !float.IsInfinity(value);
         }
 
         private bool IsValidVector3(Vector3 value)
@@ -78,15 +85,23 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_CharacterController = GetComponent<CharacterController>();
             m_Camera = Camera.main;
 
-            // Save the camera's original FOV for zooming
-            originalFOV = m_Camera.fieldOfView;
+            if (m_Camera == null)
+            {
+                Debug.LogError(
+                    "FirstPersonController: Main Camera not found!"
+                );
+                enabled = false;
+                return;
+            }
 
+            originalFOV = m_Camera.fieldOfView;
             m_OriginalCameraPosition = m_Camera.transform.localPosition;
 
             if (!IsValidVector3(m_OriginalCameraPosition))
             {
                 m_OriginalCameraPosition = Vector3.zero;
-                m_Camera.transform.localPosition = m_OriginalCameraPosition;
+                m_Camera.transform.localPosition =
+                    m_OriginalCameraPosition;
             }
 
             m_FovKick.Setup(m_Camera);
@@ -97,25 +112,45 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
 
             m_AudioSource = GetComponent<AudioSource>();
-
             m_MouseLook.Init(transform, m_Camera.transform);
 
+            // Hide interaction square initially
             if (squareUI != null)
-                squareUI.enabled = true;
+                squareUI.enabled = false;
 
-            PlayableDirector pd = FindObjectOfType<PlayableDirector>();
+            // Hide and lock cursor during gameplay
+            LockCursor();
 
-            if (pd != null)
+            timelineDirector = FindObjectOfType<PlayableDirector>();
+
+            if (timelineDirector != null)
             {
-                pd.played += OnTimelineStart;
-                pd.stopped += OnTimelineStop;
+                timelineDirector.played += OnTimelineStart;
+                timelineDirector.stopped += OnTimelineStop;
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (timelineDirector != null)
+            {
+                timelineDirector.played -= OnTimelineStart;
+                timelineDirector.stopped -= OnTimelineStop;
+            }
+        }
+
+        private void LockCursor()
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         private void OnTimelineStart(PlayableDirector obj)
         {
             disableMovement = true;
             m_CharacterController.enabled = false;
+
+            currentInteractable = null;
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -126,8 +161,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (squareUI != null)
                 squareUI.enabled = false;
 
-            // Reset zoom during Timeline
-            m_Camera.fieldOfView = originalFOV;
+            if (m_Camera != null)
+                m_Camera.fieldOfView = originalFOV;
         }
 
         private void OnTimelineStop(PlayableDirector obj)
@@ -135,34 +170,39 @@ namespace UnityStandardAssets.Characters.FirstPerson
             disableMovement = false;
             m_CharacterController.enabled = true;
 
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            LockCursor();
 
             if (uiRoot != null)
                 uiRoot.SetActive(true);
 
             if (squareUI != null)
-                squareUI.enabled = true;
+                squareUI.enabled = false;
         }
 
         private void Update()
         {
             if (disableMovement)
             {
+                currentInteractable = null;
+
+                if (squareUI != null)
+                    squareUI.enabled = false;
+
                 return;
             }
 
             RotateView();
-
-            // Handle RMB zoom
             HandleZoom();
+            HandleInteraction();
 
             if (!m_Jump)
             {
-                m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
+                m_Jump =
+                    CrossPlatformInputManager.GetButtonDown("Jump");
             }
 
-            if (!m_PreviouslyGrounded && m_CharacterController.isGrounded)
+            if (!m_PreviouslyGrounded &&
+                m_CharacterController.isGrounded)
             {
                 StartCoroutine(m_JumpBob.DoBobCycle());
                 PlayLandingSound();
@@ -178,27 +218,72 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_MoveDir.y = 0f;
             }
 
-            m_PreviouslyGrounded = m_CharacterController.isGrounded;
+            m_PreviouslyGrounded =
+                m_CharacterController.isGrounded;
+        }
 
-            if (Input.GetKeyDown(KeyCode.Q) && squareUI != null)
+        // Detect interactable objects in front of the player
+        private void HandleInteraction()
+        {
+            currentInteractable = null;
+
+            Ray ray = new Ray(
+                m_Camera.transform.position,
+                m_Camera.transform.forward
+            );
+
+            RaycastHit hit;
+
+            if (Physics.Raycast(
+                ray,
+                out hit,
+                interactionDistance,
+                interactionLayers,
+                QueryTriggerInteraction.Ignore))
             {
-                squareUI.enabled = !squareUI.enabled;
+                // Search the hit object and its parents
+                // for a script implementing IInteractable
+                MonoBehaviour[] behaviours =
+                    hit.collider.GetComponentsInParent<MonoBehaviour>();
+
+                foreach (MonoBehaviour behaviour in behaviours)
+                {
+                    if (behaviour != null &&
+                        behaviour.isActiveAndEnabled &&
+                        behaviour is IInteractable interactable)
+                    {
+                        currentInteractable = interactable;
+                        break;
+                    }
+                }
+            }
+
+            // Show square only when an interactable is detected
+            if (squareUI != null)
+            {
+                squareUI.enabled =
+                    currentInteractable != null;
+            }
+
+            // LMB interaction
+            if (currentInteractable != null &&
+                Input.GetMouseButtonDown(0))
+            {
+                currentInteractable.Interact();
             }
         }
 
-        // NEW: Hold Right Mouse Button to zoom
+        // Hold RMB to zoom
         private void HandleZoom()
         {
             if (!enableZoom || m_Camera == null)
-            {
                 return;
-            }
 
             bool isZooming = Input.GetMouseButton(1);
 
-            float targetFOV = isZooming ? zoomFOV : originalFOV;
+            float targetFOV =
+                isZooming ? zoomFOV : originalFOV;
 
-            // Smoothly transition between normal and zoomed FOV
             m_Camera.fieldOfView = Mathf.Lerp(
                 m_Camera.fieldOfView,
                 targetFOV,
@@ -208,10 +293,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void FixedUpdate()
         {
-            if (disableMovement)
-            {
+            if (disableMovement ||
+                !m_CharacterController.enabled)
                 return;
-            }
 
             float speed;
             GetInput(out speed);
@@ -222,7 +306,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             RaycastHit hitInfo;
 
-            Physics.SphereCast(
+            bool hasGroundHit = Physics.SphereCast(
                 transform.position,
                 m_CharacterController.radius,
                 Vector3.down,
@@ -230,8 +314,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_CharacterController.height / 2f
             );
 
-            desiredMove =
-                Vector3.ProjectOnPlane(desiredMove, hitInfo.normal).normalized;
+            if (hasGroundHit)
+            {
+                desiredMove = Vector3.ProjectOnPlane(
+                    desiredMove,
+                    hitInfo.normal
+                ).normalized;
+            }
+            else
+            {
+                desiredMove = desiredMove.normalized;
+            }
 
             m_MoveDir.x = desiredMove.x * speed;
             m_MoveDir.z = desiredMove.z * speed;
@@ -274,7 +367,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_AudioSource.Play();
             }
 
-            m_NextStep = m_StepCycle + .5f;
+            m_NextStep = m_StepCycle + 0.5f;
         }
 
         private void PlayJumpSound()
@@ -293,40 +386,33 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 m_StepCycle +=
                     (m_CharacterController.velocity.magnitude +
-                    (speed * (m_IsWalking ? 1f : m_RunstepLenghten))) *
+                    (speed * (m_IsWalking
+                        ? 1f
+                        : m_RunstepLenghten))) *
                     Time.fixedDeltaTime;
             }
 
             if (!(m_StepCycle > m_NextStep))
-            {
                 return;
-            }
 
             m_NextStep = m_StepCycle + m_StepInterval;
 
             PlayFootStepAudio();
         }
 
-        // Safe footstep audio
         private void PlayFootStepAudio()
         {
             if (!m_CharacterController.isGrounded)
-            {
                 return;
-            }
 
             if (m_FootstepSounds == null ||
                 m_FootstepSounds.Length == 0)
-            {
                 return;
-            }
 
             if (m_FootstepSounds.Length == 1)
             {
                 if (m_FootstepSounds[0] != null)
-                {
                     m_AudioSource.PlayOneShot(m_FootstepSounds[0]);
-                }
 
                 return;
             }
@@ -336,9 +422,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             AudioClip selectedClip = m_FootstepSounds[n];
 
             if (selectedClip == null)
-            {
                 return;
-            }
 
             m_AudioSource.clip = selectedClip;
             m_AudioSource.PlayOneShot(selectedClip);
@@ -347,34 +431,31 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_FootstepSounds[0] = selectedClip;
         }
 
-        // Prevent invalid camera positions
         private void UpdateCameraPosition(float speed)
         {
             if (!m_UseHeadBob)
-            {
                 return;
-            }
 
-            Vector3 newCameraPosition = m_OriginalCameraPosition;
+            Vector3 newCameraPosition =
+                m_OriginalCameraPosition;
 
             if (m_CharacterController.velocity.magnitude > 0 &&
                 m_CharacterController.isGrounded)
             {
                 float bobSpeed =
                     m_CharacterController.velocity.magnitude +
-                    (speed * (m_IsWalking ? 1f : m_RunstepLenghten));
+                    (speed * (m_IsWalking
+                        ? 1f
+                        : m_RunstepLenghten));
 
                 if (IsValidFloat(bobSpeed) && bobSpeed > 0f)
                 {
-                    Vector3 bobPosition = m_HeadBob.DoHeadBob(bobSpeed);
+                    Vector3 bobPosition =
+                        m_HeadBob.DoHeadBob(bobSpeed);
 
                     if (IsValidVector3(bobPosition))
                     {
                         newCameraPosition = bobPosition;
-                    }
-                    else
-                    {
-                        newCameraPosition = m_OriginalCameraPosition;
                     }
                 }
             }
@@ -391,10 +472,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 newCameraPosition = m_OriginalCameraPosition;
             }
 
-            m_Camera.transform.localPosition = newCameraPosition;
+            m_Camera.transform.localPosition =
+                newCameraPosition;
         }
 
-        // Instant WASD movement without input smoothing
+        // Instant WASD movement
         private void GetInput(out float speed)
         {
             float horizontal = Input.GetAxisRaw("Horizontal");
@@ -410,10 +492,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             m_Input = new Vector2(horizontal, vertical);
 
-            if (m_Input.sqrMagnitude > 1)
-            {
+            if (m_Input.sqrMagnitude > 1f)
                 m_Input.Normalize();
-            }
 
             if (m_IsWalking != waswalking &&
                 m_UseFovKick &&
@@ -437,19 +517,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
             );
         }
 
-        private void OnControllerColliderHit(ControllerColliderHit hit)
+        private void OnControllerColliderHit(
+            ControllerColliderHit hit)
         {
             Rigidbody body = hit.collider.attachedRigidbody;
 
             if (m_CollisionFlags == CollisionFlags.Below)
-            {
                 return;
-            }
 
             if (body == null || body.isKinematic)
-            {
                 return;
-            }
 
             body.AddForceAtPosition(
                 m_CharacterController.velocity * 0.1f,
@@ -458,7 +535,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             );
         }
 
-        // Public method for sensitivity adjustment
+        // Sensitivity slider support
         public void SetSensitivity(float value)
         {
             m_MouseLook.XSensitivity = value;
