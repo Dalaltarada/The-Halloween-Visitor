@@ -50,6 +50,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private Camera m_Camera;
         private bool m_Jump;
+        private bool suppressJumpUntilReleased = false;
         private Vector2 m_Input;
         private Vector3 m_MoveDir = Vector3.zero;
         private CharacterController m_CharacterController;
@@ -187,6 +188,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             if (disableMovement)
             {
+                m_Jump = false;
                 currentInteractable = null;
 
                 if (squareUI != null)
@@ -199,7 +201,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
             HandleZoom();
             HandleInteraction();
 
-            if (!m_Jump)
+            // A minigame can consume Space without causing a buffered jump.
+            if (suppressJumpUntilReleased)
+            {
+                m_Jump = false;
+                if (!Input.GetKey(KeyCode.Space))
+                    suppressJumpUntilReleased = false;
+            }
+            else if (!m_Jump)
             {
                 m_Jump =
                     CrossPlatformInputManager.GetButtonDown("Jump");
@@ -226,22 +235,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_CharacterController.isGrounded;
         }
 
-        // LMB interacts with doors/items, or drops the currently held item.
+        // LMB interacts with objects (including the basket while carrying candy).
+        // When holding an item, LMB on empty space drops it.
         private void HandleInteraction()
         {
             currentInteractable = null;
 
-            // While carrying an item, LMB drops it rather than interacting.
-            if (pickupController != null && pickupController.IsHoldingItem())
-            {
-                if (squareUI != null)
-                    squareUI.enabled = false;
-
-                if (Input.GetMouseButtonDown(0))
-                    pickupController.Drop();
-
-                return;
-            }
+            bool holdingItem = pickupController != null &&
+                               pickupController.IsHoldingItem();
 
             Ray ray = new Ray(
                 m_Camera.transform.position,
@@ -261,26 +262,41 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 foreach (MonoBehaviour behaviour in behaviours)
                 {
-                    if (behaviour != null &&
-                        behaviour.isActiveAndEnabled &&
-                        behaviour is IInteractable interactable)
-                    {
-                        // Don't display an interaction prompt for a disabled pickup.
-                        PickupItem pickup = behaviour as PickupItem;
-                        if (pickup != null && (!pickup.canPickup || pickup.IsHeld))
-                            continue;
+                    if (behaviour == null || !behaviour.isActiveAndEnabled)
+                        continue;
 
-                        currentInteractable = interactable;
-                        break;
+                    IInteractable interactable = behaviour as IInteractable;
+                    if (interactable == null)
+                        continue;
+
+                    PickupItem pickup = behaviour as PickupItem;
+                    if (pickup != null)
+                    {
+                        // A carried item cannot be picked up again, and
+                        // a second pickup is unavailable while carrying one.
+                        if (holdingItem || !pickup.canPickup || pickup.IsHeld)
+                            continue;
                     }
+
+                    currentInteractable = interactable;
+                    break;
                 }
             }
 
             if (squareUI != null)
                 squareUI.enabled = currentInteractable != null;
 
-            if (currentInteractable != null && Input.GetMouseButtonDown(0))
+            if (!Input.GetMouseButtonDown(0))
+                return;
+
+            if (currentInteractable != null)
+            {
                 currentInteractable.Interact();
+            }
+            else if (holdingItem)
+            {
+                pickupController.Drop();
+            }
         }
 
         // Hold RMB to zoom
@@ -543,6 +559,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 hit.point,
                 ForceMode.Impulse
             );
+        }
+
+        // Called when entering/leaving the candy timing minigame.
+        // Clear buffered jump and wait until Space has been released.
+        public void SuppressJumpUntilReleased()
+        {
+            m_Jump = false;
+            suppressJumpUntilReleased = true;
         }
 
         // Sensitivity slider support
