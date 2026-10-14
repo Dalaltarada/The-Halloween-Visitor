@@ -63,6 +63,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private IInteractable currentInteractable;
         private PlayableDirector timelineDirector;
+        private PickupController pickupController;
 
         // Movement lock for Timeline
         public bool disableMovement = false;
@@ -112,6 +113,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
 
             m_AudioSource = GetComponent<AudioSource>();
+            pickupController = GetComponent<PickupController>();
+            if (pickupController == null)
+                Debug.LogWarning("FirstPersonController: Add PickupController to the player to enable carrying items.");
             m_MouseLook.Init(transform, m_Camera.transform);
 
             // Hide interaction square initially
@@ -222,10 +226,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_CharacterController.isGrounded;
         }
 
-        // Detect interactable objects in front of the player
+        // LMB interacts with doors/items, or drops the currently held item.
         private void HandleInteraction()
         {
             currentInteractable = null;
+
+            // While carrying an item, LMB drops it rather than interacting.
+            if (pickupController != null && pickupController.IsHoldingItem())
+            {
+                if (squareUI != null)
+                    squareUI.enabled = false;
+
+                if (Input.GetMouseButtonDown(0))
+                    pickupController.Drop();
+
+                return;
+            }
 
             Ray ray = new Ray(
                 m_Camera.transform.position,
@@ -233,7 +249,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             );
 
             RaycastHit hit;
-
             if (Physics.Raycast(
                 ray,
                 out hit,
@@ -241,8 +256,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 interactionLayers,
                 QueryTriggerInteraction.Ignore))
             {
-                // Search the hit object and its parents
-                // for a script implementing IInteractable
                 MonoBehaviour[] behaviours =
                     hit.collider.GetComponentsInParent<MonoBehaviour>();
 
@@ -252,25 +265,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         behaviour.isActiveAndEnabled &&
                         behaviour is IInteractable interactable)
                     {
+                        // Don't display an interaction prompt for a disabled pickup.
+                        PickupItem pickup = behaviour as PickupItem;
+                        if (pickup != null && (!pickup.canPickup || pickup.IsHeld))
+                            continue;
+
                         currentInteractable = interactable;
                         break;
                     }
                 }
             }
 
-            // Show square only when an interactable is detected
             if (squareUI != null)
-            {
-                squareUI.enabled =
-                    currentInteractable != null;
-            }
+                squareUI.enabled = currentInteractable != null;
 
-            // LMB interaction
-            if (currentInteractable != null &&
-                Input.GetMouseButtonDown(0))
-            {
+            if (currentInteractable != null && Input.GetMouseButtonDown(0))
                 currentInteractable.Interact();
-            }
         }
 
         // Hold RMB to zoom
