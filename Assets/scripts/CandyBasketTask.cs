@@ -9,7 +9,6 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
     public CandyTimingMinigame minigame;
 
     [Header("Candy Objects")]
-    [Tooltip("Candies hidden inside the basket.")]
     public GameObject[] candies;
 
     [Header("Task State")]
@@ -17,6 +16,9 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
 
     private void Start()
     {
+        if (taskCompleted)
+            return;
+
         foreach (GameObject candy in candies)
         {
             if (candy != null)
@@ -32,7 +34,7 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
         if (pickupController == null || candyBag == null)
             return;
 
-        if (pickupController.HeldItem != candyBag)
+        if (!pickupController.IsHoldingItem(candyBag))
         {
             Debug.Log("Pick up the candy bag first!");
             return;
@@ -54,15 +56,11 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
                 candy.SetActive(true);
         }
 
-        // Release the bag from the pickup system first.
         if (pickupController != null &&
-            pickupController.HeldItem == candyBag)
+            pickupController.IsHoldingItem(candyBag))
         {
-            pickupController.Drop();
+            pickupController.ConsumeHeldItem();
         }
-
-        if (candyBag != null)
-            candyBag.gameObject.SetActive(false);
 
         Debug.Log("Candy basket task completed!");
     }

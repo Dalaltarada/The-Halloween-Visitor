@@ -235,8 +235,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_CharacterController.isGrounded;
         }
 
-        // LMB interacts with objects (including the basket while carrying candy).
-        // When holding an item, LMB on empty space drops it.
+        [Header("Interaction Detection")]
+        [SerializeField, Range(0.01f, 0.5f)] private float interactionCastRadius = 0.18f;
+        [SerializeField] private bool debugInteractionHits = true;
+
+        // Uses a small sphere cast so objects can be targeted even when their
+        // colliders are small or partly below the center of the screen.
         private void HandleInteraction()
         {
             currentInteractable = null;
@@ -244,21 +248,37 @@ namespace UnityStandardAssets.Characters.FirstPerson
             bool holdingItem = pickupController != null &&
                                pickupController.IsHoldingItem();
 
-            Ray ray = new Ray(
-                m_Camera.transform.position,
-                m_Camera.transform.forward
-            );
+            Ray ray = new Ray(m_Camera.transform.position,
+                              m_Camera.transform.forward);
 
-            RaycastHit hit;
-            if (Physics.Raycast(
+            // Physics can lag one frame behind reparenting / repositioning.
+            Physics.SyncTransforms();
+
+            RaycastHit[] hits = Physics.SphereCastAll(
                 ray,
-                out hit,
+                interactionCastRadius,
                 interactionDistance,
                 interactionLayers,
-                QueryTriggerInteraction.Ignore))
+                QueryTriggerInteraction.Ignore
+            );
+
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+            Collider firstBlockingCollider = null;
+
+            foreach (RaycastHit hit in hits)
             {
+                if (hit.collider == null)
+                    continue;
+
+                // Ignore the player's own collider(s).
+                if (hit.collider.transform.IsChildOf(transform))
+                    continue;
+
                 MonoBehaviour[] behaviours =
                     hit.collider.GetComponentsInParent<MonoBehaviour>();
+
+                bool foundInteractable = false;
 
                 foreach (MonoBehaviour behaviour in behaviours)
                 {
@@ -270,17 +290,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         continue;
 
                     PickupItem pickup = behaviour as PickupItem;
-                    if (pickup != null)
-                    {
-                        // A carried item cannot be picked up again, and
-                        // a second pickup is unavailable while carrying one.
-                        if (holdingItem || !pickup.canPickup || pickup.IsHeld)
-                            continue;
-                    }
+                    if (pickup != null &&
+                        (holdingItem || !pickup.canPickup || pickup.IsHeld))
+                        continue;
 
                     currentInteractable = interactable;
+                    foundInteractable = true;
                     break;
                 }
+
+                if (foundInteractable)
+                    break;
+
+                // Don't interact through solid walls or other obstacles.
+                firstBlockingCollider = hit.collider;
+                break;
             }
 
             if (squareUI != null)
@@ -293,9 +317,27 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 currentInteractable.Interact();
             }
-            else if (holdingItem)
+            else
             {
-                pickupController.Drop();
+                if (debugInteractionHits)
+                {
+                    if (firstBlockingCollider != null)
+                    {
+                        Debug.Log("[FPC Interaction] Blocked by: " +
+                            firstBlockingCollider.name +
+                            " | Layer: " +
+                            LayerMask.LayerToName(firstBlockingCollider.gameObject.layer) +
+                            " | IsTrigger: " + firstBlockingCollider.isTrigger);
+                    }
+                    else
+                    {
+                        Debug.Log("[FPC Interaction] No collider detected in range. " +
+                            "Check item collider, layer, position, and interactionDistance.");
+                    }
+                }
+
+                if (holdingItem)
+                    pickupController.Drop();
             }
         }
 

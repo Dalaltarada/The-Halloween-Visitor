@@ -4,31 +4,23 @@ using UnityEngine;
 public class PickupController : MonoBehaviour
 {
     [Header("Pickup Settings")]
-
-    [Tooltip("The point where picked-up items are held.")]
     public Transform holdPoint;
 
-    [Tooltip("How far in front of the camera the item is held.")]
-    public float holdDistance = 1.0f;
-
-    [Tooltip("How far in front of the camera an item is dropped.")]
+    public float holdDistance = 1f;
     public float dropDistance = 1.5f;
 
     [Header("Hold Position")]
-
-    [Tooltip("Adjust where the item appears on screen.")]
     public Vector3 holdPositionOffset =
         new Vector3(0.5f, -0.3f, 0f);
 
-    [Header("Held Item")]
+    [Header("Drop Settings")]
+    public float dropHeightOffset = 0.5f;
 
-    [SerializeField]
-    private PickupItem heldItem;
+    [Header("Held Item")]
+    [SerializeField] private PickupItem heldItem;
 
     private Camera playerCamera;
 
-    // Allows other scripts to check which item is held.
-    // Used by CandyBasketTask.
     public PickupItem HeldItem => heldItem;
 
     private void Start()
@@ -43,10 +35,10 @@ public class PickupController : MonoBehaviour
             return;
         }
 
-        // Automatically create HoldPoint if not assigned.
         if (holdPoint == null)
         {
-            GameObject point = new GameObject("HoldPoint");
+            GameObject point =
+                new GameObject("HoldPoint");
 
             holdPoint = point.transform;
 
@@ -55,7 +47,8 @@ public class PickupController : MonoBehaviour
                 false
             );
 
-            holdPoint.localRotation = Quaternion.identity;
+            holdPoint.localRotation =
+                Quaternion.identity;
         }
 
         UpdateHoldPosition();
@@ -75,14 +68,13 @@ public class PickupController : MonoBehaviour
 
     public void Pickup(PickupItem item)
     {
-        // Prevent picking up another item while holding one.
         if (heldItem != null || item == null)
             return;
 
         if (holdPoint == null)
         {
             Debug.LogWarning(
-                "PickupController: HoldPoint is missing!"
+                "PickupController: HoldPoint missing!"
             );
             return;
         }
@@ -91,8 +83,12 @@ public class PickupController : MonoBehaviour
             return;
 
         heldItem = item;
-
         heldItem.OnPickup(holdPoint);
+
+        Debug.Log(
+            "[PickupController] Picked up: " +
+            item.gameObject.name
+        );
     }
 
     public void Drop()
@@ -100,44 +96,58 @@ public class PickupController : MonoBehaviour
         if (heldItem == null)
             return;
 
-        Vector3 dropPosition = heldItem.transform.position;
+        PickupItem itemToDrop = heldItem;
+        heldItem = null;
+
+        Vector3 dropPosition =
+            itemToDrop.transform.position;
 
         if (playerCamera != null)
         {
+            Vector3 flatForward =
+                playerCamera.transform.forward;
+
+            flatForward.y = 0f;
+
+            if (flatForward.sqrMagnitude < 0.001f)
+                flatForward = transform.forward;
+
+            flatForward.Normalize();
+
+            // Drop in front of the camera rather
+            // than relative to the player's feet.
             dropPosition =
                 playerCamera.transform.position +
-                playerCamera.transform.forward * dropDistance;
+                flatForward * dropDistance +
+                Vector3.down * dropHeightOffset;
         }
 
-        heldItem.OnDrop(dropPosition);
+        itemToDrop.OnDrop(dropPosition);
 
-        heldItem = null;
+        Debug.Log(
+            "[PickupController] Dropped: " +
+            itemToDrop.gameObject.name
+        );
     }
 
-    // Used by FirstPersonController.
     public bool IsHoldingItem()
     {
         return heldItem != null;
     }
 
-    // Used by tasks to check for a specific item.
     public bool IsHoldingItem(PickupItem item)
     {
         return heldItem != null && heldItem == item;
     }
 
-    // Used when a task consumes an item,
-    // such as pouring candy into the basket.
     public void ConsumeHeldItem()
     {
         if (heldItem == null)
             return;
 
         PickupItem itemToConsume = heldItem;
-
         heldItem = null;
 
-        // Remove the item without dropping it.
         itemToConsume.gameObject.SetActive(false);
     }
 
@@ -145,11 +155,9 @@ public class PickupController : MonoBehaviour
     {
         holdDistance = Mathf.Max(0.1f, holdDistance);
         dropDistance = Mathf.Max(0.1f, dropDistance);
+        dropHeightOffset = Mathf.Max(0f, dropHeightOffset);
 
-        // Allow position adjustments during Play Mode.
         if (Application.isPlaying && holdPoint != null)
-        {
             UpdateHoldPosition();
-        }
     }
 }
