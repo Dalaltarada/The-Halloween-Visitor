@@ -59,11 +59,20 @@ public class PickupController : MonoBehaviour
         if (holdPoint == null)
             return;
 
-        holdPoint.localPosition = new Vector3(
+        // Shared default hold position.
+        Vector3 position = new Vector3(
             holdPositionOffset.x,
             holdPositionOffset.y,
             holdDistance + holdPositionOffset.z
         );
+
+        // Add the held item's individual offset.
+        if (heldItem != null)
+        {
+            position += heldItem.holdPositionOffset;
+        }
+
+        holdPoint.localPosition = position;
     }
 
     public void Pickup(PickupItem item)
@@ -83,6 +92,11 @@ public class PickupController : MonoBehaviour
             return;
 
         heldItem = item;
+
+        // Apply the item's own holding position.
+        UpdateHoldPosition();
+
+        // Existing pickup behavior.
         heldItem.OnPickup(holdPoint);
 
         Debug.Log(
@@ -104,6 +118,7 @@ public class PickupController : MonoBehaviour
 
         if (playerCamera != null)
         {
+            // Horizontal forward direction.
             Vector3 flatForward =
                 playerCamera.transform.forward;
 
@@ -114,19 +129,41 @@ public class PickupController : MonoBehaviour
 
             flatForward.Normalize();
 
-            // Drop in front of the camera rather
-            // than relative to the player's feet.
+            // Default drop position.
             dropPosition =
                 playerCamera.transform.position +
                 flatForward * dropDistance +
                 Vector3.down * dropHeightOffset;
+
+            // Individual drop offset.
+            Vector3 itemOffset =
+                itemToDrop.dropPositionOffset;
+
+            // X: Move left or right.
+            dropPosition +=
+                playerCamera.transform.right *
+                itemOffset.x;
+
+            // Y: Move up or down.
+            dropPosition +=
+                Vector3.up * itemOffset.y;
+
+            // Z: Move forward or backward.
+            dropPosition +=
+                flatForward * itemOffset.z;
         }
 
+        // Restore the item's normal world state.
         itemToDrop.OnDrop(dropPosition);
+
+        // Reset hold point for the next item.
+        UpdateHoldPosition();
 
         Debug.Log(
             "[PickupController] Dropped: " +
-            itemToDrop.gameObject.name
+            itemToDrop.gameObject.name +
+            " | Drop Position: " +
+            dropPosition
         );
     }
 
@@ -149,6 +186,9 @@ public class PickupController : MonoBehaviour
         heldItem = null;
 
         itemToConsume.gameObject.SetActive(false);
+
+        // Reset the hold point.
+        UpdateHoldPosition();
     }
 
     private void OnValidate()
