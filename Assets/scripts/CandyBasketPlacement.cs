@@ -21,6 +21,13 @@ public class CandyBasketPlacement : MonoBehaviour
     [Tooltip("Use horizontal distance only, ignoring height.")]
     public bool ignoreHeight = true;
 
+    [Header("Dialogue Task Manager")]
+    [Tooltip("Drag the GameObject containing DialogueTaskManager.")]
+    public DialogueTaskManager taskManager;
+
+    [Tooltip("Must match the Task ID in DialogueTaskManager.")]
+    public string taskID = "CandyTask";
+
     [Header("Task State")]
     [SerializeField] private bool taskStarted = false;
     [SerializeField] private bool taskCompleted = false;
@@ -49,14 +56,14 @@ public class CandyBasketPlacement : MonoBehaviour
         bool holdingBasket =
             pickupController.IsHoldingItem(basket);
 
-        // Show the arrow while the player holds the basket.
+        // Show arrow while holding the basket.
         if (placementArrow != null &&
             placementArrow.activeSelf != holdingBasket)
         {
             placementArrow.SetActive(holdingBasket);
         }
 
-        // Detect when the basket was just dropped.
+        // Detect when the basket has just been dropped.
         if (wasHoldingBasket && !holdingBasket)
         {
             if (basket.gameObject.activeInHierarchy &&
@@ -155,7 +162,7 @@ public class CandyBasketPlacement : MonoBehaviour
         // Prevent picking it up again.
         basket.canPickup = false;
 
-        // Hide the arrow.
+        // Hide placement arrow.
         if (placementArrow != null)
             placementArrow.SetActive(false);
 
@@ -164,5 +171,22 @@ public class CandyBasketPlacement : MonoBehaviour
         Debug.Log(
             "[CandyBasketPlacement] Basket placed successfully!"
         );
+
+        // NEW: Notify the dialogue task manager.
+        if (taskManager != null)
+        {
+            taskManager.CompleteTask(taskID);
+
+            Debug.Log(
+                "[CandyBasketPlacement] Dialogue task completed: "
+                + taskID
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[CandyBasketPlacement] Task Manager not assigned!"
+            );
+        }
     }
 }
