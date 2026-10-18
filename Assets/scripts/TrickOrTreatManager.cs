@@ -91,6 +91,13 @@ public class TrickOrTreatManager : MonoBehaviour
     [Header("Visitor Encounters")]
     public VisitorEncounter[] encounters;
 
+    [Header("Task 3 - Adult Encounter")]
+    [Tooltip("Encounter ID that starts the TV and couch task after leaving.")]
+    public string adultEncounterID = "Adult";
+
+    [Tooltip("Assign the GameObject containing TVRelaxTask.")]
+    public TVRelaxTask tvRelaxTask;
+
     [Header("Starting Settings")]
     public bool startFirstEncounterAutomatically = false;
 
@@ -614,6 +621,20 @@ public class TrickOrTreatManager : MonoBehaviour
             "[TrickOrTreat] Encounter completed: " +
             visitor.encounterID
         );
+
+        // Start Task 3 only after the Adult has finished leaving.
+        if (visitor.encounterID == adultEncounterID)
+        {
+            if (tvRelaxTask != null)
+            {
+                tvRelaxTask.StartTask();
+                Debug.Log("[TrickOrTreat] Adult left. Task 3 started.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrickOrTreat] TVRelaxTask is not assigned.");
+            }
+        }
 
         if (startNext &&
             encounters != null &&
