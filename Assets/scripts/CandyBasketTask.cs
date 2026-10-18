@@ -11,11 +11,15 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
     [Header("Candy Objects")]
     public GameObject[] candies;
 
-    [Header("Next Task - New Basket Placement")]
+    [Header("Next Task - Basket Placement")]
     public CandyBasketPlacement basketPlacement;
 
     [Header("Basket Pickup")]
     public PickupItem candyBasket;
+
+    [Header("Trick Or Treat")]
+    [Tooltip("Handles collecting candy for visitors.")]
+    public TrickOrTreatBasket trickOrTreatBasket;
 
     [Header("Task State")]
     [SerializeField] private bool taskCompleted = false;
@@ -25,10 +29,13 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
         if (taskCompleted)
             return;
 
-        foreach (GameObject candy in candies)
+        if (candies != null)
         {
-            if (candy != null)
-                candy.SetActive(false);
+            foreach (GameObject candy in candies)
+            {
+                if (candy != null)
+                    candy.SetActive(false);
+            }
         }
 
         if (candyBasket != null)
@@ -37,29 +44,41 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        // AFTER MINIGAME:
-        // Pick up the candy basket.
-        if (taskCompleted)
+        // STAGE 1:
+        // Candy minigame has not been completed.
+        if (!taskCompleted)
         {
-            if (candyBasket == null ||
-                pickupController == null)
-                return;
-
-            if (!candyBasket.canPickup ||
-                candyBasket.IsHeld)
-                return;
-
-            pickupController.Pickup(candyBasket);
-
-            Debug.Log(
-                "[CandyBasketTask] Basket pickup requested!"
-            );
-
+            StartCandyMinigame();
             return;
         }
 
-        // BEFORE MINIGAME:
-        // Require the candy bag.
+        // STAGE 2:
+        // Minigame completed, but basket
+        // has not been placed on the table.
+        if (basketPlacement == null ||
+            !basketPlacement.IsCompleted)
+        {
+            PickupBasket();
+            return;
+        }
+
+        // STAGE 3:
+        // Basket has been placed.
+        // Use it to collect candy for NPCs.
+        if (trickOrTreatBasket != null)
+        {
+            trickOrTreatBasket.Interact();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[CandyBasketTask] TrickOrTreatBasket missing!"
+            );
+        }
+    }
+
+    private void StartCandyMinigame()
+    {
         if (minigame == null ||
             pickupController == null ||
             candyBag == null)
@@ -67,11 +86,30 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
 
         if (!pickupController.IsHoldingItem(candyBag))
         {
-            Debug.Log("Pick up the candy bag first!");
+            Debug.Log(
+                "[CandyBasketTask] Pick up the candy bag first!"
+            );
             return;
         }
 
         minigame.Begin(this);
+    }
+
+    private void PickupBasket()
+    {
+        if (candyBasket == null ||
+            pickupController == null)
+            return;
+
+        if (!candyBasket.canPickup ||
+            candyBasket.IsHeld)
+            return;
+
+        pickupController.Pickup(candyBasket);
+
+        Debug.Log(
+            "[CandyBasketTask] Basket pickup requested!"
+        );
     }
 
     public void CompleteTask()
@@ -81,11 +119,14 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
 
         taskCompleted = true;
 
-        // Reveal candies.
-        foreach (GameObject candy in candies)
+        // Reveal candies inside the basket.
+        if (candies != null)
         {
-            if (candy != null)
-                candy.SetActive(true);
+            foreach (GameObject candy in candies)
+            {
+                if (candy != null)
+                    candy.SetActive(true);
+            }
         }
 
         // Consume the candy bag.
@@ -95,13 +136,11 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
             pickupController.ConsumeHeldItem();
         }
 
-        // Unlock basket pickup.
+        // Allow basket pickup.
         if (candyBasket != null)
-        {
             candyBasket.canPickup = true;
-        }
 
-        // Start the NEW placement system.
+        // Start basket placement.
         if (basketPlacement != null)
         {
             basketPlacement.StartTask();
@@ -109,7 +148,7 @@ public class CandyBasketTask : MonoBehaviour, IInteractable
         else
         {
             Debug.LogWarning(
-                "[CandyBasketTask] Basket placement reference missing!"
+                "[CandyBasketTask] Basket placement missing!"
             );
         }
 

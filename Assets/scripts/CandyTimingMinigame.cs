@@ -45,6 +45,13 @@ public class CandyTimingMinigame : MonoBehaviour
     public UnityStandardAssets.Characters.FirstPerson
         .FirstPersonController playerController;
 
+    [Header("Testing / Debug")]
+    [Tooltip("Enable the number 2 shortcut to instantly complete the minigame. Disable before building.")]
+    public bool enableTestingShortcut = true;
+
+    [Tooltip("Basket task to complete when skipping the minigame without starting it.")]
+    public CandyBasketTask testingBasketTask;
+
     private CandyBasketTask activeBasket;
 
     private bool isPlaying = false;
@@ -81,8 +88,6 @@ public class CandyTimingMinigame : MonoBehaviour
         markerPosition = 0f;
         direction = 1f;
 
-        // Prevent a held Spacebar from counting
-        // as an attempt when the minigame opens.
         waitingForSpaceRelease = true;
 
         isPlaying = true;
@@ -106,14 +111,21 @@ public class CandyTimingMinigame : MonoBehaviour
 
     private void Update()
     {
+        // TESTING SHORTCUT:
+        // Press 2 to instantly complete the minigame.
+        if (enableTestingShortcut &&
+            Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            SkipMinigame();
+            return;
+        }
+
         if (!isPlaying)
             return;
 
-        // Move the marker left and right.
         markerPosition +=
             direction * currentMarkerSpeed * Time.deltaTime;
 
-        // Reflect at the bar edges.
         while (markerPosition > 1f || markerPosition < 0f)
         {
             if (markerPosition > 1f)
@@ -130,7 +142,6 @@ public class CandyTimingMinigame : MonoBehaviour
 
         UpdateVisuals();
 
-        // Require a fresh Spacebar press.
         if (waitingForSpaceRelease)
         {
             if (!Input.GetKey(KeyCode.Space))
@@ -141,6 +152,30 @@ public class CandyTimingMinigame : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
             CheckTiming();
+    }
+
+    private void SkipMinigame()
+    {
+        CandyBasketTask basketToComplete =
+            activeBasket != null
+                ? activeBasket
+                : testingBasketTask;
+
+        if (basketToComplete == null)
+        {
+            Debug.LogWarning(
+                "[CandyTimingMinigame] Testing Basket Task not assigned!"
+            );
+            return;
+        }
+
+        Debug.Log(
+            "[CandyTimingMinigame] DEBUG: Minigame skipped using key 2!"
+        );
+
+        activeBasket = basketToComplete;
+
+        Finish();
     }
 
     private void CheckTiming()
@@ -164,7 +199,6 @@ public class CandyTimingMinigame : MonoBehaviour
                 return;
             }
 
-            // Increase difficulty after a success.
             currentMarkerSpeed += speedIncreasePerSuccess;
 
             currentTargetWidth = Mathf.Max(
@@ -177,10 +211,8 @@ public class CandyTimingMinigame : MonoBehaviour
             SetFeedback("MISSED! TRY AGAIN!");
         }
 
-        // Change target after BOTH hits and misses.
         RandomizeTarget(false);
 
-        // Reset marker for the next attempt.
         markerPosition = 0f;
         direction = 1f;
 
@@ -209,8 +241,6 @@ public class CandyTimingMinigame : MonoBehaviour
         float previousPosition = targetPosition;
         float newPosition = previousPosition;
 
-        // Try several random positions so the target
-        // visibly changes after each attempt.
         for (int i = 0; i < 20; i++)
         {
             newPosition = Random.Range(
@@ -226,8 +256,6 @@ public class CandyTimingMinigame : MonoBehaviour
             }
         }
 
-        // If random attempts could not move it enough,
-        // select the farther available edge.
         if (!firstTarget &&
             Mathf.Abs(newPosition - previousPosition)
                 < minimumTargetMovement)

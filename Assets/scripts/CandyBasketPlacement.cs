@@ -21,12 +21,13 @@ public class CandyBasketPlacement : MonoBehaviour
     [Tooltip("Use horizontal distance only, ignoring height.")]
     public bool ignoreHeight = true;
 
-    [Header("Dialogue Task Manager")]
-    [Tooltip("Drag the GameObject containing DialogueTaskManager.")]
+    [Header("Task Manager")]
     public DialogueTaskManager taskManager;
-
-    [Tooltip("Must match the Task ID in DialogueTaskManager.")]
     public string taskID = "CandyTask";
+
+    [Header("Trick Or Treat - After Placement")]
+    public TrickOrTreatManager trickOrTreatManager;
+    public string encounterToStart = "PumpkinKid";
 
     [Header("Task State")]
     [SerializeField] private bool taskStarted = false;
@@ -56,14 +57,14 @@ public class CandyBasketPlacement : MonoBehaviour
         bool holdingBasket =
             pickupController.IsHoldingItem(basket);
 
-        // Show arrow while holding the basket.
+        // Show arrow while holding basket.
         if (placementArrow != null &&
             placementArrow.activeSelf != holdingBasket)
         {
             placementArrow.SetActive(holdingBasket);
         }
 
-        // Detect when the basket has just been dropped.
+        // Detect when the basket is dropped.
         if (wasHoldingBasket && !holdingBasket)
         {
             if (basket.gameObject.activeInHierarchy &&
@@ -100,7 +101,7 @@ public class CandyBasketPlacement : MonoBehaviour
             placementArrow.SetActive(wasHoldingBasket);
 
         Debug.Log(
-            "[CandyBasketPlacement] Task started!"
+            "[CandyBasketPlacement] Placement task started!"
         );
     }
 
@@ -144,11 +145,11 @@ public class CandyBasketPlacement : MonoBehaviour
 
         taskCompleted = true;
 
-        // Move basket to its exact final position.
+        // Move basket to final position.
         basket.transform.position = finalPosition.position;
         basket.transform.rotation = finalPosition.rotation;
 
-        // Keep the basket in place.
+        // Keep basket in place.
         Rigidbody rb = basket.GetComponent<Rigidbody>();
 
         if (rb != null)
@@ -159,7 +160,7 @@ public class CandyBasketPlacement : MonoBehaviour
             rb.isKinematic = true;
         }
 
-        // Prevent picking it up again.
+        // Prevent picking up the basket again.
         basket.canPickup = false;
 
         // Hide placement arrow.
@@ -172,20 +173,38 @@ public class CandyBasketPlacement : MonoBehaviour
             "[CandyBasketPlacement] Basket placed successfully!"
         );
 
-        // NEW: Notify the dialogue task manager.
+        // Complete the overall candy basket task.
         if (taskManager != null)
         {
             taskManager.CompleteTask(taskID);
 
             Debug.Log(
-                "[CandyBasketPlacement] Dialogue task completed: "
-                + taskID
+                "[CandyBasketPlacement] CandyTask completed!"
             );
         }
         else
         {
             Debug.LogWarning(
-                "[CandyBasketPlacement] Task Manager not assigned!"
+                "[CandyBasketPlacement] Task Manager missing!"
+            );
+        }
+
+        // Start Pumpkin Head's encounter.
+        if (trickOrTreatManager != null)
+        {
+            trickOrTreatManager.StartEncounter(
+                encounterToStart
+            );
+
+            Debug.Log(
+                "[CandyBasketPlacement] Triggering visitor: " +
+                encounterToStart
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[CandyBasketPlacement] TrickOrTreatManager missing!"
             );
         }
     }

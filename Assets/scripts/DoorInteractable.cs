@@ -52,6 +52,11 @@ public class DoorInteractable : MonoBehaviour, IInteractable
 
     private bool isOpen = false;
     private bool isAnimating = false;
+    public bool IsOpen => isOpen;
+    public bool IsAnimating => isAnimating;
+
+    public bool IsFullyClosed => !isOpen && !isAnimating;
+    public bool IsFullyOpen => isOpen && !isAnimating;
 
     private float currentAngle = 0f;
 
