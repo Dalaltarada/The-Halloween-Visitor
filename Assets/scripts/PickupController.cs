@@ -177,6 +177,7 @@ public class PickupController : MonoBehaviour
         return heldItem != null && heldItem == item;
     }
 
+
     public void ConsumeHeldItem()
     {
         if (heldItem == null)
@@ -185,11 +186,22 @@ public class PickupController : MonoBehaviour
         PickupItem itemToConsume = heldItem;
         heldItem = null;
 
+        // Reset the item's held state, parent and physics.
+        // OnDrop sets isHeld back to false.
+        itemToConsume.OnDrop(itemToConsume.transform.position);
+
+        // Hide the consumed item until it is needed again.
         itemToConsume.gameObject.SetActive(false);
 
-        // Reset the hold point.
+        // Reset the hold point for the next item.
         UpdateHoldPosition();
+
+        Debug.Log(
+            "[PickupController] Item consumed and reset: " +
+            itemToConsume.gameObject.name
+        );
     }
+
 
     private void OnValidate()
     {
