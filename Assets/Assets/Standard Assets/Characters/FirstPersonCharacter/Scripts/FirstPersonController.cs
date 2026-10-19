@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Playables;
@@ -51,6 +50,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Camera m_Camera;
         private bool m_Jump;
         private bool suppressJumpUntilReleased = false;
+        private bool isSeated = false;
+        public bool IsSeated => isSeated;
         private Vector2 m_Input;
         private Vector3 m_MoveDir = Vector3.zero;
         private CharacterController m_CharacterController;
@@ -201,6 +202,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             HandleZoom();
             HandleInteraction();
 
+            if (isSeated)
+            {
+                m_Jump = false;
+                m_MoveDir = Vector3.zero;
+                return;
+            }
+
             // A minigame can consume Space without causing a buffered jump.
             if (suppressJumpUntilReleased)
             {
@@ -315,6 +323,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             if (currentInteractable != null)
             {
+                MonoBehaviour target = currentInteractable as MonoBehaviour;
+
+                Debug.Log(
+                    "[FPC] Interacting with: " +
+                    (target != null ? target.gameObject.name : "Unknown") +
+                    " | Script: " +
+                    currentInteractable.GetType().Name
+                );
+
                 currentInteractable.Interact();
             }
             else
@@ -362,6 +379,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void FixedUpdate()
         {
             if (disableMovement ||
+                isSeated ||
                 !m_CharacterController.enabled)
                 return;
 
@@ -601,6 +619,35 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 hit.point,
                 ForceMode.Impulse
             );
+        }
+
+        // Keeps mouse look, zoom and LMB interactions active while seated.
+        public void SitAt(Transform seatPoint)
+        {
+            if (seatPoint == null || m_CharacterController == null) return;
+            m_CharacterController.enabled = false;
+            transform.position = seatPoint.position;
+            transform.rotation = seatPoint.rotation;
+            m_MoveDir = Vector3.zero;
+            m_Input = Vector2.zero;
+            m_Jump = false;
+            isSeated = true;
+            m_CharacterController.enabled = true;
+        }
+
+        public void StandUpAt(Transform standingPoint)
+        {
+            if (m_CharacterController == null) return;
+            m_CharacterController.enabled = false;
+            if (standingPoint != null)
+            {
+                transform.position = standingPoint.position;
+                transform.rotation = standingPoint.rotation;
+            }
+            m_MoveDir = Vector3.zero;
+            m_Jump = false;
+            isSeated = false;
+            m_CharacterController.enabled = true;
         }
 
         // Called when entering/leaving the candy timing minigame.

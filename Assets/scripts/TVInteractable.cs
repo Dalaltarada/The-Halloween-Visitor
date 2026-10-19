@@ -1,49 +1,38 @@
-
 using UnityEngine;
-
+using UnityEngine.Video;
 public class TVInteractable : MonoBehaviour, IInteractable
 {
-    [Header("References")]
     public TVRelaxTask relaxTask;
-
-    [Header("TV Visuals")]
+    [Header("Video Player - keep on an always-active object")]
+    public VideoPlayer videoPlayer;
+    [Header("Visuals")]
     public GameObject tvScreenOn;
     public GameObject tvScreenOff;
-
-    [Header("Audio")]
-    public AudioSource tvAudio;
-
+    public Light tvLight;
     private bool isOn;
-
     private void Start()
     {
-        UpdateTVVisuals();
+        isOn = false;
+        if (videoPlayer != null)
+        {
+            videoPlayer.playOnAwake = false;
+            videoPlayer.Stop();
+        }
+        UpdateVisuals();
     }
-
     public void Interact()
     {
-        if (relaxTask == null || !relaxTask.TaskStarted)
-            return;
-
-        if (isOn)
-            return;
-
+        if (isOn || relaxTask == null || !relaxTask.TaskStarted || !relaxTask.PizzaPlaced) return;
         isOn = true;
-
-        UpdateTVVisuals();
-
-        if (tvAudio != null)
-            tvAudio.Play();
-
+        UpdateVisuals();
+        if (videoPlayer != null) videoPlayer.Play();
+        else Debug.LogWarning("[TV] Assign VideoPlayer!");
         relaxTask.TurnOnTV();
     }
-
-    private void UpdateTVVisuals()
+    private void UpdateVisuals()
     {
-        if (tvScreenOn != null)
-            tvScreenOn.SetActive(isOn);
-
-        if (tvScreenOff != null)
-            tvScreenOff.SetActive(!isOn);
+        if (tvScreenOn != null) tvScreenOn.SetActive(isOn);
+        if (tvScreenOff != null) tvScreenOff.SetActive(!isOn);
+        if (tvLight != null) tvLight.enabled = isOn;
     }
 }
