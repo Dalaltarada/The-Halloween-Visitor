@@ -1,0 +1,11 @@
+Model Information:
+* title:	Scarecrow Monster
+* source:	https://sketchfab.com/3d-models/scarecrow-monster-9c2e4288da4d49a89cc0f86f8ed56ada
+* author:	PolyGoreStudio (https://sketchfab.com/Phu.99)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Scarecrow Monster" (https://sketchfab.com/3d-models/scarecrow-monster-9c2e4288da4d49a89cc0f86f8ed56ada) by PolyGoreStudio (https://sketchfab.com/Phu.99) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
