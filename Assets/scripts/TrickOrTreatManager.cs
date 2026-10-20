@@ -43,6 +43,9 @@ public class TrickOrTreatManager : MonoBehaviour
         public GameObject npc;
         public Animator animator;
 
+        [Tooltip("Optional Legacy Animation component. Use this instead of Animator for older imported models such as Kid 7.")]
+        public Animation legacyAnimation;
+
         [Header("Separate Fungus Flowcharts")]
         public Flowchart greetingFlowchart;
         public Flowchart farewellFlowchart;
@@ -657,10 +660,30 @@ public class TrickOrTreatManager : MonoBehaviour
         VisitorEncounter visitor,
         string animationName)
     {
-        if (visitor.animator == null ||
-            string.IsNullOrEmpty(animationName))
+        if (string.IsNullOrEmpty(animationName))
             return;
 
-        visitor.animator.Play(animationName);
+        // Legacy clips are played through the Animation component.
+        // Existing NPCs keep using their Animator controllers unchanged.
+        if (visitor.legacyAnimation != null && visitor.legacyAnimation.enabled)
+        {
+            if (visitor.legacyAnimation.GetClip(animationName) == null)
+            {
+                Debug.LogWarning("[TrickOrTreat] Legacy clip not found: " +
+                    animationName + " on " + visitor.encounterID);
+                return;
+            }
+
+            visitor.legacyAnimation.Play(animationName);
+        }
+        else if (visitor.animator != null && visitor.animator.enabled)
+        {
+            visitor.animator.Play(animationName);
+        }
+        else
+        {
+            Debug.LogWarning("[TrickOrTreat] No enabled Animator or Legacy Animation assigned for " +
+                visitor.encounterID);
+        }
     }
 }
