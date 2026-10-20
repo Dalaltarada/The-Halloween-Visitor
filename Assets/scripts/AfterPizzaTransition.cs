@@ -13,6 +13,10 @@ public class AfterPizzaTransition : MonoBehaviour
     public GameObject fullCandyVisual;
     public GameObject lessCandyVisual;
 
+    [Header("Object to Hide During Transition")]
+    [Tooltip("Optional: Assign any GameObject to hide when BeginNextEncounter runs.")]
+    public GameObject objectToHide;
+
     [Header("Next Visitor")]
     public TrickOrTreatManager trickOrTreatManager;
     [Tooltip("Must exactly match the encounterID in TrickOrTreatManager.")]
@@ -46,6 +50,9 @@ public class AfterPizzaTransition : MonoBehaviour
         // These are decorative visuals, not the interactable candy PickupItem.
         if (fullCandyVisual != null) fullCandyVisual.SetActive(false);
         if (lessCandyVisual != null) lessCandyVisual.SetActive(true);
+
+        // Hide the optional object during this transition.
+        if (objectToHide != null) objectToHide.SetActive(false);
 
         // Existing manager handles waiting for a closed door, doorbell and NPC arrival.
         trickOrTreatManager.StartEncounter(nextEncounterID);
