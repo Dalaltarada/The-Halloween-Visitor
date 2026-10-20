@@ -15,6 +15,10 @@ public class DialogueTaskManager : MonoBehaviour
         public Flowchart flowchart;
         public string blockName;
 
+        [Header("Start Behaviour")]
+        [Tooltip("Uncheck for tasks started manually by a Fungus Invoke Method, such as ShowerTask.")]
+        public bool autoStartAfterDialogue = true;
+
         [Header("Task UI")]
         public GameObject taskUI;
 
@@ -45,7 +49,7 @@ public class DialogueTaskManager : MonoBehaviour
     {
         foreach (DialogueTask task in tasks)
         {
-            if (task.completed || task.started)
+            if (task.completed || task.started || !task.autoStartAfterDialogue)
                 continue;
 
             if (task.flowchart == null ||
@@ -70,6 +74,18 @@ public class DialogueTaskManager : MonoBehaviour
                 StartTask(task);
             }
         }
+    }
+
+    // Call from a Fungus Invoke Method AFTER the final Say command.
+    public void StartTask(string taskID)
+    {
+        foreach (DialogueTask task in tasks)
+        {
+            if (task.taskID != taskID) continue;
+            if (!task.started && !task.completed) StartTask(task);
+            return;
+        }
+        Debug.LogWarning("Task not found: " + taskID);
     }
 
     private void StartTask(DialogueTask task)
@@ -104,6 +120,17 @@ public class DialogueTaskManager : MonoBehaviour
         Debug.LogWarning(
             "Task not found: " + taskID
         );
+    }
+
+    public bool IsTaskStarted(string taskID)
+    {
+        foreach (DialogueTask task in tasks)
+        {
+            if (task.taskID == taskID)
+                return task.started && !task.completed;
+        }
+
+        return false;
     }
 
     public bool IsTaskCompleted(string taskID)
