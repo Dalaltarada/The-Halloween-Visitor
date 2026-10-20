@@ -16,10 +16,23 @@ public class PickupItem : MonoBehaviour, IInteractable
     public float soundVolume = 1f;
 
     [Header("Hold Settings")]
+
+    [Tooltip("Individual position offset while held.")]
+    public Vector3 holdPositionOffset = Vector3.zero;
+
+    [Tooltip("Individual rotation offset while held.")]
     public Vector3 holdRotationOffset = Vector3.zero;
 
     [Min(0.01f)]
     public float holdScaleMultiplier = 1f;
+
+    [Header("Drop Settings")]
+
+    [Tooltip(
+        "Individual drop offset relative to the player. " +
+        "X = right/left, Y = up/down, Z = forward/back."
+    )]
+    public Vector3 dropPositionOffset = Vector3.zero;
 
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
@@ -132,7 +145,10 @@ public class PickupItem : MonoBehaviour, IInteractable
         // Preserve current world size.
         transform.SetParent(holdPoint, true);
 
+        // The PickupController applies the
+        // individual hold position offset.
         transform.localPosition = Vector3.zero;
+
         transform.localRotation =
             Quaternion.Euler(holdRotationOffset);
 
@@ -143,8 +159,12 @@ public class PickupItem : MonoBehaviour, IInteractable
         if (showDebugLogs)
         {
             Debug.Log(
-                "[PickupItem] Picked up: " + gameObject.name +
-                " | World Scale: " + transform.lossyScale
+                "[PickupItem] Picked up: " +
+                gameObject.name +
+                " | World Scale: " +
+                transform.lossyScale +
+                " | Hold Position Offset: " +
+                holdPositionOffset
             );
         }
 
@@ -156,7 +176,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         if (!isHeld)
             return;
 
-        // Detach from camera.
+        // Detach from the camera.
         transform.SetParent(originalParent, true);
 
         // Restore original transform.
@@ -164,7 +184,7 @@ public class PickupItem : MonoBehaviour, IInteractable
         transform.position = dropPosition;
         transform.rotation = originalWorldRotation;
 
-        // Restore physics settings.
+        // Restore original physics settings.
         rb.isKinematic = originalIsKinematic;
         rb.useGravity = originalUseGravity;
         rb.constraints = originalConstraints;
@@ -192,17 +212,19 @@ public class PickupItem : MonoBehaviour, IInteractable
 
         isHeld = false;
 
-        // Update physics after moving and
-        // re-enabling the colliders.
+        // Synchronize physics after dropping.
         Physics.SyncTransforms();
 
         if (showDebugLogs)
         {
             Debug.Log(
-                "[PickupItem] Dropped: " + gameObject.name +
-                " | Position: " + transform.position +
+                "[PickupItem] Dropped: " +
+                gameObject.name +
+                " | Position: " +
+                transform.position +
                 " | Main Collider Enabled: " +
-                (mainCollider != null && mainCollider.enabled) +
+                (mainCollider != null &&
+                 mainCollider.enabled) +
                 " | Layer: " +
                 LayerMask.LayerToName(gameObject.layer)
             );
