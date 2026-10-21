@@ -3645,7 +3645,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: 1a17f2f285e618442b2ad0347b9debde, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.312
+      value: 5.39
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: 1a17f2f285e618442b2ad0347b9debde, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3653,7 +3653,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: 1a17f2f285e618442b2ad0347b9debde, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.881
+      value: 6.12
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: 1a17f2f285e618442b2ad0347b9debde, type: 3}
       propertyPath: m_LocalRotation.w
@@ -23233,42 +23233,6 @@ Transform:
   m_Father: {fileID: 1916483605}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: -536.716}
---- !u!21 &749143513
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Hidden/DarkBringerRefined_1_2
-  m_Shader: {fileID: 4800000, guid: 99d80d0fdb7c6724c89e77d81bbc026a, type: 3}
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BayerTex:
-        m_Texture: {fileID: 2800000, guid: eac7505667530464e91debe0b4a8492b, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _Lut2D:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats: []
-    m_Colors: []
-  m_BuildTextureStacks: []
 --- !u!1 &749253263
 GameObject:
   m_ObjectHideFlags: 0
@@ -54069,14 +54033,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1418034379}
-  m_LocalRotation: {x: -0, y: -0.99979144, z: -0, w: -0.02042301}
-  m_LocalPosition: {x: -3.9029, y: 1.9795, z: -3.6563}
-  m_LocalScale: {x: 0.08063062, y: 0.07709777, z: 1}
+  m_LocalRotation: {x: -0, y: -0.7056085, z: -0, w: -0.7086019}
+  m_LocalPosition: {x: -1.337, y: 1.19, z: -2.607}
+  m_LocalScale: {x: 0.07490755, y: 0.072631225, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 34
-  m_LocalEulerAnglesHint: {x: 0, y: -182.34, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -270.24298, z: 0}
 --- !u!1001 &1419749729
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -68650,7 +68614,7 @@ MonoBehaviour:
     serializedVersion: 2
     x: -159.97989
     y: 76.500015
-    width: 77.333336
+    width: 77
     height: 40
   tint: {r: 1, g: 1, b: 1, a: 1}
   useCustomTint: 0
@@ -73585,7 +73549,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sha: {fileID: 4800000, guid: 99d80d0fdb7c6724c89e77d81bbc026a, type: 3}
-  mat: {fileID: 749143513}
+  mat: {fileID: 0}
   flatLut: {fileID: 2800000, guid: b536a29ef1c463b4a894cf616766d37b, type: 3}
   bayerTexture: {fileID: 2800000, guid: eac7505667530464e91debe0b4a8492b, type: 3}
   ColorBleed: 0.332

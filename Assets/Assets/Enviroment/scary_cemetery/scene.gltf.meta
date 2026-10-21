@@ -1,0 +1,214 @@
+fileFormatVersion: 2
+guid: e2d1e2295a6917f448737c835d49367c
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 715df9372183c47e389bb6e19fbc3b52, type: 3}
+  editorImportSettings:
+    generateSecondaryUVSet: 0
+  importSettings:
+    nodeNameMethod: 1
+    animationMethod: 2
+    generateMipMaps: 1
+    texturesReadable: 0
+    defaultMinFilterMode: 9729
+    defaultMagFilterMode: 9729
+    anisotropicFilterLevel: 1
+  instantiationSettings:
+    mask: -1
+    layer: 0
+    skinUpdateWhenOffscreen: 1
+    lightIntensityFactor: 1
+    sceneObjectCreation: 2
+  assetDependencies:
+  - type: 0
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\scene.bin
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\scene.bin
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_1_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_1_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_10_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_10_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_11_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_11_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_12_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_12_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_13_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_13_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_14_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_14_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_15_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_15_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_16_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_16_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_17_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_17_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_18_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_18_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_19_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_19_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_2_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_2_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_20_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_20_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_21_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_21_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_22_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_22_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_23_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_23_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_24_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_24_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_25_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_25_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_26_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_26_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_27_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_27_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_28_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_28_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_29_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_29_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_3_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_3_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_30_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_30_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_31_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_31_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_32_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_32_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_33_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_33_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_34_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_34_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_35_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_35_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_36_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_36_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_37_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_37_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_38_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_38_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_39_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_39_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_4_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_4_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_40_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_40_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_41_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_41_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_42_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_42_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_43_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_43_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_44_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_44_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_45_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_45_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_46_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_46_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_47_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_47_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_48_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_48_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_49_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_49_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_5_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_5_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_50_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_50_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_51_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_51_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_52_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_52_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_53_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_53_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_54_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_54_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_55_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_55_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_56_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_56_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_57_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_57_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_58_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_58_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_59_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_59_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_6_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_6_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_7_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_7_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_8_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_8_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_9_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_9_baseColor.png
+  - type: 1
+    originalUri: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_60_baseColor.png
+    assetPath: Assets\Assets\Enviroment\scary_cemetery\textures\TextureMaterial_60_baseColor.png
+  reportItems: []

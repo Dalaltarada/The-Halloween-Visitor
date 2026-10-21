@@ -1,0 +1,8 @@
+Model Information:
+* title:	Scary Cemetery
+* source:	https://sketchfab.com/3d-models/scary-cemetery-985d387f53d247b68efcb63c40551c3d
+* author:	katydid (https://sketchfab.com/Katydid.)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
