@@ -70,6 +70,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         // Movement lock for Timeline
         public bool disableMovement = false;
 
+        [Header("Scripted Movement")]
+        public bool scriptedMovement = false; // Keeps mouse look while suppressing player movement.
+
         private bool IsValidFloat(float value)
         {
             return !float.IsNaN(value) &&
@@ -202,7 +205,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             HandleZoom();
             HandleInteraction();
 
-            if (isSeated)
+            if (isSeated || scriptedMovement)
             {
                 m_Jump = false;
                 m_MoveDir = Vector3.zero;
