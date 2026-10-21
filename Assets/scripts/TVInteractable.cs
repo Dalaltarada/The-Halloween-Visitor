@@ -3,6 +3,8 @@ using UnityEngine.Video;
 public class TVInteractable : MonoBehaviour, IInteractable
 {
     public TVRelaxTask relaxTask;
+    [Header("Turn Off Lights Task")]
+    public TurnOffLightsTask lightsTask;
     [Header("Video Player - keep on an always-active object")]
     public VideoPlayer videoPlayer;
     [Header("Visuals")]
@@ -22,7 +24,20 @@ public class TVInteractable : MonoBehaviour, IInteractable
     }
     public void Interact()
     {
-        if (isOn || relaxTask == null || !relaxTask.TaskStarted || !relaxTask.PizzaPlaced) return;
+        // Once the lights task starts, this click turns the TV OFF and counts it.
+        if (lightsTask != null && lightsTask.IsActive)
+        {
+            if (!isOn) return;
+            if (!lightsTask.RegisterTV()) return;
+            isOn = false;
+            if (videoPlayer != null) videoPlayer.Stop();
+            UpdateVisuals();
+            return;
+        }
+
+        // Original relaxation task: turn the TV ON once pizza is placed.
+        if (isOn || relaxTask == null || !relaxTask.TaskStarted ||
+            !relaxTask.PizzaPlaced || relaxTask.TaskCompleted) return;
         isOn = true;
         UpdateVisuals();
         if (videoPlayer != null) videoPlayer.Play();

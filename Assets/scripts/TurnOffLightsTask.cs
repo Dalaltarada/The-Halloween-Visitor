@@ -14,9 +14,11 @@ public class TurnOffLightsTask : MonoBehaviour
     [Header("Required Interactions")]
     [Min(0)] public int requiredSwitches = 4;
     [Min(0)] public int requiredPumpkins = 6;
+    [Min(0)] public int requiredTVs = 1;
 
     private int switchesOff;
     private int pumpkinsOff;
+    private int tvsOff;
     private bool finished;
 
     public bool IsActive
@@ -42,22 +44,41 @@ public class TurnOffLightsTask : MonoBehaviour
             counterRoot.SetActive(IsActive);
     }
 
+    // Existing switches and pumpkins keep using this method.
     public bool RegisterLight(bool isPumpkin)
     {
+        return RegisterLightKind(isPumpkin ? LightCategory.Pumpkin : LightCategory.WallSwitch);
+    }
+
+    public enum LightCategory { WallSwitch, Pumpkin, TV }
+
+    public bool RegisterTV()
+    {
+        return RegisterLightKind(LightCategory.TV);
+    }
+
+    private bool RegisterLightKind(LightCategory category)
+    {
         if (!IsActive || finished) return false;
-        if (isPumpkin)
+        switch (category)
         {
-            if (pumpkinsOff >= requiredPumpkins) return false;
-            pumpkinsOff++;
-        }
-        else
-        {
-            if (switchesOff >= requiredSwitches) return false;
-            switchesOff++;
+            case LightCategory.WallSwitch:
+                if (switchesOff >= requiredSwitches) return false;
+                switchesOff++;
+                break;
+            case LightCategory.Pumpkin:
+                if (pumpkinsOff >= requiredPumpkins) return false;
+                pumpkinsOff++;
+                break;
+            case LightCategory.TV:
+                if (tvsOff >= requiredTVs) return false;
+                tvsOff++;
+                break;
         }
 
         RefreshCounter();
-        if (switchesOff >= requiredSwitches && pumpkinsOff >= requiredPumpkins)
+        if (switchesOff >= requiredSwitches &&
+            pumpkinsOff >= requiredPumpkins && tvsOff >= requiredTVs)
         {
             finished = true;
             taskManager.CompleteTask(taskID);
@@ -69,8 +90,9 @@ public class TurnOffLightsTask : MonoBehaviour
     private void RefreshCounter()
     {
         if (counterText != null)
-            counterText.text = "Lights off: " + (switchesOff + pumpkinsOff) + "/" + (requiredSwitches + requiredPumpkins)
+            counterText.text = "Lights off: " + (switchesOff + pumpkinsOff + tvsOff) + "/" + (requiredSwitches + requiredPumpkins + requiredTVs)
                 + "\nSwitches: " + switchesOff + "/" + requiredSwitches
-                + "  Pumpkins: " + pumpkinsOff + "/" + requiredPumpkins;
+                + "  Pumpkins: " + pumpkinsOff + "/" + requiredPumpkins
+                + "  TV: " + tvsOff + "/" + requiredTVs;
     }
 }
