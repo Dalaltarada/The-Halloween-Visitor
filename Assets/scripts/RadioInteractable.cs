@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
@@ -42,6 +41,19 @@ public class RadioInteractable : MonoBehaviour, IInteractable
         else
         {
             radioAudio.Play();
+        }
+    }
+
+    // Called by Fungus to stop the radio music.
+    public void StopRadio()
+    {
+        if (radioAudio == null)
+            radioAudio = GetComponent<AudioSource>();
+
+        if (radioAudio != null)
+        {
+            radioAudio.Stop();
+            Debug.Log("[Radio] Music stopped by Fungus.");
         }
     }
 }

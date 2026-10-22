@@ -6,6 +6,7 @@ using Fungus;
 /// Entering the trigger reveals Chris by the fridge.
 /// Looking at Chris makes him run to Point 2, disappear, then triggers
 /// the Fungus shout and reveals crying Chris after a delay.
+/// Crying loops until stopped by Fungus.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class ChrisWallScare : MonoBehaviour
@@ -13,6 +14,9 @@ public class ChrisWallScare : MonoBehaviour
     [Header("Task Gate")]
     public DialogueTaskManager taskManager;
     public string requiredTaskID = "CheckHouse";
+
+    [Header("House Exit")]
+    public BoxCollider exitBlocker;
 
     [Header("Detection")]
     public Transform player;
@@ -34,6 +38,7 @@ public class ChrisWallScare : MonoBehaviour
     [Header("Fridge")]
     [Tooltip("Assign the DoorInteractable on the actual refrigerator door. The door remains active.")]
     public DoorInteractable fridgeDoor;
+
     [Tooltip("Old reference retained for existing Inspector data; this object is never toggled.")]
     public GameObject openFridgeDoor;
 
@@ -57,38 +62,49 @@ public class ChrisWallScare : MonoBehaviour
     private void Awake()
     {
         triggerZone = GetComponent<Collider>();
+
         if (!triggerZone.isTrigger)
             Debug.LogWarning("[ChrisWallScare] Set the zone collider to Is Trigger.", this);
 
         // Keep the trigger inactive until the CheckHouse task begins.
         triggerZone.enabled = false;
 
-        if (fridgeChris != null) fridgeChris.SetActive(false);
-        if (cryingChris != null) cryingChris.SetActive(false);
-        // Never disable the fridge door or the wall writing.
-        // Ensure Chris starts hidden until the player enters the zone.
+        if (fridgeChris != null)
+            fridgeChris.SetActive(false);
+
+        if (cryingChris != null)
+            cryingChris.SetActive(false);
+
+        // Make crying loop continuously until Fungus stops it.
+        if (cryingSound != null)
+        {
+            cryingSound.loop = true;
+            cryingSound.playOnAwake = false;
+            cryingSound.Stop();
+        }
     }
 
     private void Update()
     {
-        // Enable the trigger only while CheckHouse is active. Once the
-        // scare starts, keep it enabled so leaving the zone does not
-        // interrupt the sequence.
+        // Enable the trigger only while CheckHouse is active.
         if (!writingTriggered && triggerZone != null)
         {
             bool taskActive = taskManager != null &&
                 taskManager.IsTaskStarted(requiredTaskID);
+
             if (triggerZone.enabled != taskActive)
                 triggerZone.enabled = taskActive;
         }
 
-        if (!writingTriggered || chaseStarted) return;
+        if (!writingTriggered || chaseStarted)
+            return;
 
         if (LookingAt(fridgeChrisCollider))
         {
             if (fridgeChris == null || point2 == null)
             {
-                Debug.LogWarning("[ChrisWallScare] Assign Fridge Chris and Point 2.", this);
+                Debug.LogWarning(
+                    "[ChrisWallScare] Assign Fridge Chris and Point 2.", this);
                 return;
             }
 
@@ -99,53 +115,80 @@ public class ChrisWallScare : MonoBehaviour
 
     private bool IsPlayer(Collider other)
     {
-        if (player == null || other == null) return false;
+        if (player == null || other == null)
+            return false;
+
         Transform t = other.transform;
-        return t == player || t.IsChildOf(player) || player.IsChildOf(t);
+
+        return t == player ||
+               t.IsChildOf(player) ||
+               player.IsChildOf(t);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!IsPlayer(other) || !TaskIsActive()) return;
+        if (!IsPlayer(other) || !TaskIsActive())
+            return;
+
         RevealFridgeChris();
     }
 
     private void OnTriggerStay(Collider other)
     {
-        // Handles a player already standing inside when the collider enables.
-        if (!IsPlayer(other) || !TaskIsActive()) return;
+        if (!IsPlayer(other) || !TaskIsActive())
+            return;
+
         RevealFridgeChris();
     }
 
     private bool TaskIsActive()
     {
-        return taskManager != null && taskManager.IsTaskStarted(requiredTaskID);
+        return taskManager != null &&
+               taskManager.IsTaskStarted(requiredTaskID);
     }
 
     private void RevealFridgeChris()
     {
-        if (writingTriggered) return;
+        if (writingTriggered)
+            return;
+
         writingTriggered = true;
 
-        if (fridgeChris != null) fridgeChris.SetActive(true);
-        // Open the actual hinged door using its existing interaction logic.
-        // Do not toggle the door GameObject; that bypasses its rotation system.
+        if (fridgeChris != null)
+            fridgeChris.SetActive(true);
+
+        // Open the actual hinged fridge door.
         if (fridgeDoor != null && fridgeDoor.IsFullyClosed)
             fridgeDoor.Interact();
         else if (fridgeDoor == null)
-            Debug.LogWarning("[ChrisWallScare] Assign Fridge Door (DoorInteractable).", this);
+            Debug.LogWarning(
+                "[ChrisWallScare] Assign Fridge Door (DoorInteractable).", this);
+
         PlayAnimation(idleClip);
-        Debug.Log("[ChrisWallScare] Player entered zone: Chris appeared by fridge.");
+
+        Debug.Log(
+            "[ChrisWallScare] Player entered zone: Chris appeared by fridge.");
     }
 
     private bool LookingAt(Collider target)
     {
-        if (playerCamera == null || target == null || !target.gameObject.activeInHierarchy)
+        if (playerCamera == null ||
+            target == null ||
+            !target.gameObject.activeInHierarchy)
             return false;
 
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        Ray ray = new Ray(
+            playerCamera.transform.position,
+            playerCamera.transform.forward);
+
         RaycastHit hit;
-        if (!Physics.Raycast(ray, out hit, lookDistance, ~0, QueryTriggerInteraction.Ignore))
+
+        if (!Physics.Raycast(
+            ray,
+            out hit,
+            lookDistance,
+            ~0,
+            QueryTriggerInteraction.Ignore))
             return false;
 
         return hit.collider == target ||
@@ -159,50 +202,108 @@ public class ChrisWallScare : MonoBehaviour
 
         if (runningAudio != null)
         {
-            if (runningSound != null) runningAudio.PlayOneShot(runningSound);
-            else runningAudio.Play();
+            if (runningSound != null)
+                runningAudio.PlayOneShot(runningSound);
+            else
+                runningAudio.Play();
         }
 
         Transform kid = fridgeChris.transform;
+
         Vector3 destination = point2.position;
         destination.y = kid.position.y;
 
         while (Vector3.Distance(kid.position, destination) > 0.02f)
         {
             Vector3 direction = destination - kid.position;
+
             if (direction.sqrMagnitude > 0.001f)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                Quaternion targetRotation =
+                    Quaternion.LookRotation(direction);
+
                 kid.rotation = Quaternion.RotateTowards(
-                    kid.rotation, targetRotation, turnSpeed * Time.deltaTime);
+                    kid.rotation,
+                    targetRotation,
+                    turnSpeed * Time.deltaTime);
             }
 
             kid.position = Vector3.MoveTowards(
-                kid.position, destination, Mathf.Max(0.01f, runSpeed) * Time.deltaTime);
+                kid.position,
+                destination,
+                Mathf.Max(0.01f, runSpeed) * Time.deltaTime);
+
             yield return null;
         }
 
         fridgeChris.SetActive(false);
-        if (runningAudio != null) runningAudio.Stop();
 
-        if (shoutFlowchart != null && shoutFlowchart.FindBlock(shoutBlock) != null)
+        if (runningAudio != null)
+            runningAudio.Stop();
+
+        if (shoutFlowchart != null &&
+            shoutFlowchart.FindBlock(shoutBlock) != null)
+        {
             shoutFlowchart.ExecuteBlock(shoutBlock);
+        }
         else
-            Debug.LogWarning("[ChrisWallScare] Shout Flowchart or block is missing.", this);
+        {
+            Debug.LogWarning(
+                "[ChrisWallScare] Shout Flowchart or block is missing.", this);
+        }
 
-        yield return new WaitForSeconds(Mathf.Max(0f, cryingDelay));
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, cryingDelay));
 
-        if (cryingChris != null) cryingChris.SetActive(true);
-        if (cryingSound != null) cryingSound.Play();
+        if (cryingChris != null)
+            cryingChris.SetActive(true);
+
+        // Start looping crying audio.
+        if (cryingSound != null)
+        {
+            cryingSound.loop = true;
+            cryingSound.Play();
+
+            Debug.Log("[ChrisWallScare] Crying started and looping.");
+        }
     }
 
     private void PlayAnimation(string clipName)
     {
-        if (fridgeAnimation == null || string.IsNullOrEmpty(clipName)) return;
+        if (fridgeAnimation == null ||
+            string.IsNullOrEmpty(clipName))
+            return;
 
         if (fridgeAnimation.GetClip(clipName) != null)
+        {
             fridgeAnimation.Play(clipName);
+        }
         else
-            Debug.LogWarning("[ChrisWallScare] Missing animation: " + clipName, this);
+        {
+            Debug.LogWarning(
+                "[ChrisWallScare] Missing animation: " + clipName, this);
+        }
+    }
+
+    // Called by Fungus after the chosen dialogue finishes.
+    public void UnlockHouseExit()
+    {
+        if (exitBlocker != null)
+        {
+            exitBlocker.enabled = false;
+
+            Debug.Log("[ChrisWallScare] House exit unlocked.");
+        }
+    }
+
+    // Called by Fungus to stop Chris crying.
+    public void StopCrying()
+    {
+        if (cryingSound != null)
+        {
+            cryingSound.Stop();
+
+            Debug.Log("[ChrisWallScare] Crying stopped by Fungus.");
+        }
     }
 }
