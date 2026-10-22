@@ -4116,6 +4116,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &132275285
 AudioSource:
   m_ObjectHideFlags: 0
@@ -18151,6 +18152,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &582340072
 AudioSource:
   m_ObjectHideFlags: 0
@@ -24701,6 +24703,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &799835225
 AudioSource:
   m_ObjectHideFlags: 0
@@ -26683,6 +26686,7 @@ MonoBehaviour:
   m_JumpSound: {fileID: 8300000, guid: 5897aeed9b676024fbb8c694b421a861, type: 3}
   m_LandSound: {fileID: 8300000, guid: 3b09d59f4499d45428baa7a21e954296, type: 3}
   disableMovement: 0
+  scriptedMovement: 0
   interactionCastRadius: 0.18
   debugInteractionHits: 1
 --- !u!20 &858858806
@@ -31927,6 +31931,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &1053910334
 AudioSource:
   m_ObjectHideFlags: 0
@@ -36865,6 +36870,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &1258120663
 AudioSource:
   m_ObjectHideFlags: 0
@@ -37827,6 +37833,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &1277632509
 AudioSource:
   m_ObjectHideFlags: 0
@@ -45893,6 +45900,42 @@ Transform:
   m_Father: {fileID: 1734583958}
   m_RootOrder: 81
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &1542251038
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Hidden/DarkBringerRefined_1_2
+  m_Shader: {fileID: 4800000, guid: 99d80d0fdb7c6724c89e77d81bbc026a, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BayerTex:
+        m_Texture: {fileID: 2800000, guid: eac7505667530464e91debe0b4a8492b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Lut2D:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats: []
+    m_Colors: []
+  m_BuildTextureStacks: []
 --- !u!1 &1543608356 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1953390336702740012, guid: a145bb634b272d845a745b41e7082140, type: 3}
@@ -46179,6 +46222,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &1555415913
 AudioSource:
   m_ObjectHideFlags: 0
@@ -54231,6 +54275,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &1823158115
 AudioSource:
   m_ObjectHideFlags: 0
@@ -57203,6 +57248,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &1925343010
 AudioSource:
   m_ObjectHideFlags: 0
@@ -60702,6 +60748,7 @@ MonoBehaviour:
   soundVolume: 1
   openSoundDelay: 0
   closeSoundDelay: 0.5
+  allowPlayerInteraction: 1
 --- !u!82 &2048092456
 AudioSource:
   m_ObjectHideFlags: 0
@@ -61304,7 +61351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sha: {fileID: 4800000, guid: 99d80d0fdb7c6724c89e77d81bbc026a, type: 3}
-  mat: {fileID: 0}
+  mat: {fileID: 1542251038}
   flatLut: {fileID: 2800000, guid: b536a29ef1c463b4a894cf616766d37b, type: 3}
   bayerTexture: {fileID: 2800000, guid: eac7505667530464e91debe0b4a8492b, type: 3}
   ColorBleed: 0.332
