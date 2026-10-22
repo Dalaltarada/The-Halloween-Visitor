@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/final ending.unity
     guid: dd73f174c94aa7245811540b4f87a7d1
+  - enabled: 1
+    path: Assets/Scenes/Cemetery menu 1.unity
+    guid: 8b8f615af4845af42866d36fd3d60fd3
   m_configObjects: {}
