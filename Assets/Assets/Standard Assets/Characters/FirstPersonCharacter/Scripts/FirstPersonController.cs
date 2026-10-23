@@ -383,6 +383,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             if (disableMovement ||
                 isSeated ||
+                scriptedMovement ||
                 !m_CharacterController.enabled)
                 return;
 
