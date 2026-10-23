@@ -1,35 +1,48 @@
+
 using System.Collections;
 using UnityEngine;
 using Fungus;
 
 /// <summary>
-/// Attach to each neighbour's doorbell (with a collider).
-/// Fungus can invoke CloseNeighbourDoor(), OpenNeighbourDoor(), or FinishVisit().
+/// Attach to each neighbour's doorbell.
+/// Supports ordered visits between neighbours.
 /// </summary>
 public class NeighbourDoorbell : MonoBehaviour, IInteractable
 {
     [Header("Neighbour Door")]
     public DoorInteractable neighbourDoor;
     public GameObject neighbourNPC;
+
     [Tooltip("If checked, the NPC is hidden until the bell is rung.")]
     public bool hideNPCBeforeBell = true;
 
     [Header("Doorbell")]
     public AudioSource bellAudio;
     public AudioClip bellClip;
-    [Min(0f)] public float delayBeforeOpening = 0.8f;
+
+    [Min(0f)]
+    public float delayBeforeOpening = 0.8f;
 
     [Header("Dialogue")]
     public Flowchart dialogueFlowchart;
     public string dialogueBlock = "Start";
-    [Min(0f)] public float dialogueDelayAfterOpening = 0f;
+
+    [Min(0f)]
+    public float dialogueDelayAfterOpening = 0f;
 
     [Header("Visit Settings")]
     public bool allowRepeatVisits = false;
     public bool lockAfterVisit = true;
 
+    [Header("Visit Order")]
+    [Tooltip("Assign the previous neighbour's doorbell. Leave empty for the first neighbour.")]
+    public NeighbourDoorbell requiredPreviousDoorbell;
+
     private bool busy;
     private bool visited;
+    private bool visitCompleted;
+
+    public bool VisitCompleted => visitCompleted;
 
     private void Awake()
     {
@@ -39,13 +52,32 @@ public class NeighbourDoorbell : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        if (busy || (visited && !allowRepeatVisits)) return;
-        if (neighbourDoor == null || dialogueFlowchart == null ||
-            dialogueFlowchart.FindBlock(dialogueBlock) == null)
+        // Prevent interaction while busy or already visited.
+        if (busy || (visited && !allowRepeatVisits))
+            return;
+
+        // Require the previous neighbour's visit to be completed.
+        if (requiredPreviousDoorbell != null &&
+            !requiredPreviousDoorbell.VisitCompleted)
         {
-            Debug.LogWarning("[NeighbourDoorbell] Assign door and valid Fungus block on " + name);
+            Debug.Log(
+                "[NeighbourDoorbell] Visit the previous neighbour first."
+            );
+
             return;
         }
+
+        if (neighbourDoor == null ||
+            dialogueFlowchart == null ||
+            dialogueFlowchart.FindBlock(dialogueBlock) == null)
+        {
+            Debug.LogWarning(
+                "[NeighbourDoorbell] Assign door and valid Fungus block on " + name
+            );
+
+            return;
+        }
+
         StartCoroutine(RingSequence());
     }
 
@@ -53,34 +85,52 @@ public class NeighbourDoorbell : MonoBehaviour, IInteractable
     {
         busy = true;
         visited = true;
+
         if (bellAudio != null)
         {
-            if (bellClip != null) bellAudio.PlayOneShot(bellClip);
-            else bellAudio.Play();
+            if (bellClip != null)
+                bellAudio.PlayOneShot(bellClip);
+            else
+                bellAudio.Play();
         }
+
         yield return new WaitForSeconds(delayBeforeOpening);
-        if (neighbourNPC != null) neighbourNPC.SetActive(true);
+
+        if (neighbourNPC != null)
+            neighbourNPC.SetActive(true);
+
         neighbourDoor.OpenFromScript();
-        yield return new WaitUntil(() => neighbourDoor != null && neighbourDoor.IsFullyOpen);
+
+        yield return new WaitUntil(
+            () => neighbourDoor != null &&
+                  neighbourDoor.IsFullyOpen
+        );
+
         if (dialogueDelayAfterOpening > 0f)
-            yield return new WaitForSeconds(dialogueDelayAfterOpening);
+            yield return new WaitForSeconds(
+                dialogueDelayAfterOpening
+            );
+
         dialogueFlowchart.ExecuteBlock(dialogueBlock);
+
         busy = false;
     }
 
-    // Invoke from Fungus when the neighbour closes their door.
+    // Called by Fungus when the neighbour closes their door.
     public void CloseNeighbourDoor()
     {
-        if (neighbourDoor != null) neighbourDoor.CloseFromScript();
+        if (neighbourDoor != null)
+            neighbourDoor.CloseFromScript();
     }
 
-    // Invoke from Fungus if the door should reopen.
+    // Called by Fungus to reopen the door.
     public void OpenNeighbourDoor()
     {
-        if (neighbourDoor != null) neighbourDoor.OpenFromScript();
+        if (neighbourDoor != null)
+            neighbourDoor.OpenFromScript();
     }
 
-    // Invoke at the end of the visit. Hides NPC after the door has closed.
+    // Called by Fungus at the end of the visit.
     public void FinishVisit()
     {
         StartCoroutine(FinishVisitRoutine());
@@ -89,13 +139,30 @@ public class NeighbourDoorbell : MonoBehaviour, IInteractable
     private IEnumerator FinishVisitRoutine()
     {
         busy = true;
+
         if (neighbourDoor != null)
         {
             neighbourDoor.CloseFromScript();
-            yield return new WaitUntil(() => neighbourDoor == null || neighbourDoor.IsFullyClosed);
+
+            yield return new WaitUntil(
+                () => neighbourDoor == null ||
+                      neighbourDoor.IsFullyClosed
+            );
         }
-        if (neighbourNPC != null) neighbourNPC.SetActive(false);
-        if (!lockAfterVisit) visited = false;
+
+        if (neighbourNPC != null)
+            neighbourNPC.SetActive(false);
+
+        if (!lockAfterVisit)
+            visited = false;
+
+        // Mark visit completed only after the door closes.
+        visitCompleted = true;
+
         busy = false;
+
+        Debug.Log(
+            "[NeighbourDoorbell] Visit completed: " + name
+        );
     }
 }
