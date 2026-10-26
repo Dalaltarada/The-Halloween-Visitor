@@ -11,7 +11,7 @@ public class GameSceneManager : MonoBehaviour
 
     [Header("Scene Settings")]
     [Tooltip("Scene to load when the game finishes.")]
-    public int mainMenuSceneIndex = 0;
+    public int mainMenuSceneIndex = 1;
 
     [Header("Fade Settings")]
     [Min(0f)]

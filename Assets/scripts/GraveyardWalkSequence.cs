@@ -36,6 +36,10 @@ public class GraveyardWalkSequence : MonoBehaviour
     [Tooltip("Optional: disable Christopher after the fade finishes.")]
     public bool disableChristopherAfterFade = true;
 
+    [Header("Christopher Fade Material")]
+    [Tooltip("Assign your duplicate glTF material with Blend Mode set to Fade. The original Opaque material stays on Christopher until disappearance.")]
+    public Material christopherFadeMaterial;
+
     [Header("Fungus")]
     public Flowchart flowchart;
     public string walkingBlock = "Graveyard_Walking";
@@ -336,73 +340,147 @@ public class GraveyardWalkSequence : MonoBehaviour
 
     private IEnumerator FadeChristopher()
     {
-        // Renderer.materials creates unique material copies, so no other objects
-        // sharing Christopher's original materials are affected.
+        if (christopherFadeMaterial == null)
+        {
+            Debug.LogError("[Graveyard] Assign Christopher Fade Material in the Inspector.");
+            ghostFadeRoutine = null;
+            yield break;
+        }
+
         Renderer[] renderers = christopher.GetComponentsInChildren<Renderer>(true);
-        System.Collections.Generic.List<Material> fadeMaterials =
-            new System.Collections.Generic.List<Material>();
-        System.Collections.Generic.List<Color> originalColors =
-            new System.Collections.Generic.List<Color>();
+        var fadeMaterials = new System.Collections.Generic.List<Material>();
+        var initialColors = new System.Collections.Generic.List<Color>();
+        var colorProperties = new System.Collections.Generic.List<string>();
+        var originalRendererMaterials = new System.Collections.Generic.List<Material[]>();
+        var replacedRenderers = new System.Collections.Generic.List<Renderer>();
 
         foreach (Renderer renderer in renderers)
         {
-            Material[] materials = renderer.materials;
-            foreach (Material material in materials)
+            Material[] originals = renderer.sharedMaterials;
+            Material[] replacements = new Material[originals.Length];
+            originalRendererMaterials.Add(originals);
+            replacedRenderers.Add(renderer);
+
+            for (int i = 0; i < originals.Length; i++)
             {
-                if (material == null) continue;
-                // Built-in Standard shader needs Fade rendering mode before alpha works.
-                if (material.shader != null && material.shader.name == "Standard")
+                if (originals[i] == null)
+                    continue;
+
+                // Create a unique copy so the project asset and other characters stay unchanged.
+                Material instance = new Material(christopherFadeMaterial);
+                replacements[i] = instance;
+
+                // For a multi-material model, copy each slot's original texture and tint.
+                // The supplied fade material still determines the transparent render mode.
+                Material original = originals[i];
+                if (original.HasProperty("baseColorTexture") && instance.HasProperty("baseColorTexture"))
+                    instance.SetTexture("baseColorTexture", original.GetTexture("baseColorTexture"));
+                else if (original.HasProperty("_BaseColorTexture") && instance.HasProperty("_BaseColorTexture"))
+                    instance.SetTexture("_BaseColorTexture", original.GetTexture("_BaseColorTexture"));
+                else if (original.HasProperty("_BaseMap") && instance.HasProperty("_BaseMap"))
+                    instance.SetTexture("_BaseMap", original.GetTexture("_BaseMap"));
+                else if (original.HasProperty("_MainTex") && instance.HasProperty("_MainTex"))
+                    instance.SetTexture("_MainTex", original.GetTexture("_MainTex"));
+
+                string property = null;
+                if (instance.HasProperty("baseColorFactor")) property = "baseColorFactor";
+                else if (instance.HasProperty("_BaseColorFactor")) property = "_BaseColorFactor";
+                else if (instance.HasProperty("_BaseColor")) property = "_BaseColor";
+                else if (instance.HasProperty("_Color")) property = "_Color";
+
+                if (property != null)
                 {
-                    material.SetFloat("_Mode", 2f);
-                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                    material.SetInt("_ZWrite", 0);
-                    material.DisableKeyword("_ALPHATEST_ON");
-                    material.EnableKeyword("_ALPHABLEND_ON");
-                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                    Color tint = instance.GetColor(property);
+                    string originalProperty = original.HasProperty("baseColorFactor") ? "baseColorFactor" :
+                        original.HasProperty("_BaseColorFactor") ? "_BaseColorFactor" :
+                        original.HasProperty("_BaseColor") ? "_BaseColor" :
+                        original.HasProperty("_Color") ? "_Color" : null;
+                    if (originalProperty != null) tint = original.GetColor(originalProperty);
+                    // Always start fully opaque, even if the fade asset has alpha < 1.
+                    tint.a = 1f;
+                    instance.SetColor(property, tint);
+                    fadeMaterials.Add(instance);
+                    initialColors.Add(tint);
+                    colorProperties.Add(property);
                 }
                 else
                 {
-                    // Built-in opaque/legacy shaders usually ignore alpha.
-                    // Switch the instance to a transparent shader while preserving
-                    // its main texture and tint.
-                    Shader transparent = Shader.Find("Legacy Shaders/Transparent/Diffuse");
-                    if (transparent != null)
-                    {
-                        Texture mainTexture = material.HasProperty("_MainTex") ? material.GetTexture("_MainTex") : null;
-                        Color tint = material.HasProperty("_Color") ? material.GetColor("_Color") : Color.white;
-                        material.shader = transparent;
-                        if (mainTexture != null) material.SetTexture("_MainTex", mainTexture);
-                        material.color = tint;
-                    }
-                    else Debug.LogWarning("[Graveyard] Transparent shader unavailable: " + material.name);
+                    Debug.LogWarning("[Graveyard] Fade material has no supported alpha color property: " + instance.name);
                 }
-                if (!material.HasProperty("_Color")) continue;
-                fadeMaterials.Add(material);
-                originalColors.Add(material.color);
             }
+            renderer.materials = replacements;
         }
 
-        float elapsed = 0f;
+        if (fadeMaterials.Count == 0)
+            Debug.LogWarning("[Graveyard] No fadeable materials found; Christopher will only disappear at the end.");
+
         float duration = Mathf.Max(0.1f, ghostFadeDuration);
+        float elapsed = 0f;
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
-            float alpha = 1f - Mathf.Clamp01(elapsed / duration);
+            elapsed += Time.unscaledDeltaTime;
+            float fade = 1f - Mathf.Clamp01(elapsed / duration);
             for (int i = 0; i < fadeMaterials.Count; i++)
             {
-                if (fadeMaterials[i] == null) continue;
-                Color color = originalColors[i];
-                color.a *= alpha;
-                fadeMaterials[i].color = color;
+                Color c = initialColors[i];
+                c.a *= fade;
+                fadeMaterials[i].SetColor(colorProperties[i], c);
             }
             yield return null;
         }
 
         if (disableChristopherAfterFade && christopher != null)
             christopher.gameObject.SetActive(false);
+        else
+        {
+            // Restore normal materials if Christopher is meant to remain active.
+            for (int i = 0; i < replacedRenderers.Count; i++)
+                if (replacedRenderers[i] != null)
+                    replacedRenderers[i].sharedMaterials = originalRendererMaterials[i];
+        }
+
+        // Renderer references no longer need the temporary instances.
+        foreach (Material material in fadeMaterials)
+            if (material != null) Destroy(material);
+
         ghostFadeRoutine = null;
+    }
+
+    // Inspector component menu > Debug Christopher Fade Shader.
+    // Lists the shader properties so we can identify the actual opacity control.
+    [ContextMenu("Debug Christopher Fade Shader")]
+    private void DebugChristopherFadeShader()
+    {
+        if (christopherFadeMaterial == null)
+        {
+            Debug.LogError("[Graveyard] Assign Christopher Fade Material first.", this);
+            return;
+        }
+
+        Shader shader = christopherFadeMaterial.shader;
+        if (shader == null)
+        {
+            Debug.LogError("[Graveyard] Fade material has no shader.", this);
+            return;
+        }
+
+        Debug.Log("[Graveyard] Fade shader: " + shader.name +
+                  " | Render queue: " + christopherFadeMaterial.renderQueue, this);
+
+        for (int i = 0; i < shader.GetPropertyCount(); i++)
+        {
+            string name = shader.GetPropertyName(i);
+            string type = shader.GetPropertyType(i).ToString();
+            string value = "";
+            if (christopherFadeMaterial.HasProperty(name))
+            {
+                if (type == "Color")
+                    value = " = " + christopherFadeMaterial.GetColor(name);
+                else if (type == "Float" || type == "Range")
+                    value = " = " + christopherFadeMaterial.GetFloat(name);
+            }
+            Debug.Log("[Graveyard] " + name + " (" + type + ")" + value, this);
+        }
     }
 
     public void ReleasePlayer()
